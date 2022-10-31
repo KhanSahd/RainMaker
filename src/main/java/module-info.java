@@ -3,6 +3,6 @@ module com.example.flame {
     requires javafx.fxml;
 
 
-    opens com.example.flame to javafx.fxml;
-    exports com.example.flame;
+    opens com.example.RainMaker to javafx.fxml;
+    exports com.example.RainMaker;
 }

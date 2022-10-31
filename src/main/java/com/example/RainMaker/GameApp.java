@@ -1,17 +1,13 @@
-package com.example.flame;
+package com.example.RainMaker;
 
 import javafx.application.Application;
-import javafx.event.EventHandler;
-import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 
 interface Updatable {
-
+    void update();
 }
 
 class GameText {
