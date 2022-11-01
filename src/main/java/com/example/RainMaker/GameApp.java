@@ -155,7 +155,9 @@ class Helicopter extends GameObject {
     int fuel;
     GameText fText;
 
-    Point2D loc = new Point2D(190, 60);
+    int y = 60;
+    int x = 190;
+    Point2D loc = new Point2D(x, y);
 
     Helicopter(){
         e = new Ellipse(10, 10);
@@ -174,7 +176,15 @@ class Helicopter extends GameObject {
 
     public void handleKeyPress(KeyEvent evt){
         if(evt.getCode() == KeyCode.UP){
-            translate(loc.getX() + 1, loc.getY() + 1);
+            y += 5;
+            translate(x, y);
+        }
+
+        if(evt.getCode() == KeyCode.RIGHT){
+            rotate(getMyRotation() - 3);
+        }
+        if(evt.getCode() == KeyCode.LEFT){
+            rotate(getMyRotation() + 3);
         }
     }
 
@@ -208,6 +218,7 @@ public class GameApp extends Application {
         Game game = new Game();
         root.getChildren().add(game);
         Scene scene = new Scene(root, GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
+        scene.setOnKeyPressed(e -> game.helicopter.handleKeyPress(e));
         primaryStage.setTitle("GAME_WINDOW_TITLE");
         primaryStage.setScene(scene);
         game.setScaleY(-1);
