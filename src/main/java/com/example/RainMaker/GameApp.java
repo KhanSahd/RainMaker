@@ -1,14 +1,11 @@
 package com.example.RainMaker;
 
 import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Rectangle;
@@ -17,12 +14,27 @@ import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
+import java.util.Random;
+
 interface Updatable {
     void update();
 }
 
 class GameText {
 
+    private Label s;
+    GameText(int percent){
+        s = new Label(percent + "%");
+        s.setScaleY(-1);
+    }
+
+    public Label getString(){
+        return s;
+    }
+
+    public void setString(int percent){
+        s.setText(percent + "%");
+    }
 }
 
 abstract class GameObject extends Group {
@@ -74,18 +86,28 @@ class Pond {
 
 }
 
-class Cloud extends GameObject {
+class Cloud extends Group {
 
     Ellipse ellipse;
     int count = 0;
+    GameText perc;
     Cloud(){
         ellipse = new Ellipse(60, 60);
         ellipse.setFill(Color.WHITE);
         getChildren().add(ellipse);
+        //perc = new GameText(0);
+        //getChildren().add(perc.getString());
+    }
+
+    public int getHeight(){
+        return (int)ellipse.getRadiusY();
+    }
+    public int getWidth(){
+        return (int)ellipse.getRadiusX();
     }
 }
 
-class Helipad extends GameObject {
+class Helipad extends Group {
 
     Ellipse ellipse;
     Rectangle rectangle;
@@ -94,15 +116,15 @@ class Helipad extends GameObject {
         ellipse.setStroke(Color.GRAY);
         rectangle = new Rectangle(80, 80);
         rectangle.setStroke(Color.GRAY);
-        add(rectangle);
-        add(ellipse);
+        getChildren().add(rectangle);
+        getChildren().add(ellipse);
         ellipse.setTranslateX(40);
         ellipse.setTranslateY(40);
         //translate(150, 10);
     }
 }
 
-class Helicopter {
+class Helicopter extends Group {
     Helicopter(){
 
     }
@@ -113,12 +135,24 @@ class Game extends Pane {
     Helipad helipad;
     Helicopter helicopter;
     Cloud cloud;
+    Random r;
+    int low = 800 / 3;
+    int high;
+    int result;
     public Game() {
         helipad = new Helipad();
         cloud = new Cloud();
-        helipad.translate(150, 10);
-        cloud.translate(300, 500);
+        r = new Random();
+        high = 800 - cloud.getHeight();
+        result = r.nextInt(high-low) + low;
+        helipad.setTranslateX(150);
+        helipad.setTranslateY(10);
+        //helipad.translate(150, 10);
+        //cloud.translate(300, 500);
+        cloud.setTranslateY(result);
+        cloud.setTranslateX((Math.random() * 400) - cloud.getWidth());
         getChildren().addAll(cloud, helipad);
+        setPrefSize(400, 800);
 
     }
 
@@ -141,7 +175,17 @@ public class GameApp extends Application {
 
     }
 
+    public int getGameWidth(){
+        return GAME_WIDTH;
+    }
+
+    public int getGameHeight(){
+        return GAME_HEIGHT;
+    }
+
     public static void main(String[] args) {
         Application.launch();
     }
+
+
 }
