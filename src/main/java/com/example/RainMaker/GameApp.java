@@ -86,28 +86,36 @@ class Pond {
 
 }
 
-class Cloud extends Group {
+class Cloud extends GameObject {
 
     Ellipse ellipse;
     int count = 0;
     GameText perc;
+
+    Random r;
+    int low = 800 / 3;
+    int lowW;
+    int high;
+    int highW;
+    int result;
+    int resultW;
+
     Cloud(){
         ellipse = new Ellipse(60, 60);
+        r = new Random();
+        high = 800 - (int)ellipse.getRadiusY();
+        lowW = (int)ellipse.getRadiusX();
+        highW = 400 - (int)ellipse.getRadiusX();
+        result = r.nextInt(high-low) + low;
+        resultW = r.nextInt(highW - lowW) + lowW;
         ellipse.setFill(Color.WHITE);
-        getChildren().add(ellipse);
-        //perc = new GameText(0);
-        //getChildren().add(perc.getString());
-    }
+        add(ellipse);
+        translate(resultW, result);
 
-    public int getHeight(){
-        return (int)ellipse.getRadiusY();
-    }
-    public int getWidth(){
-        return (int)ellipse.getRadiusX();
     }
 }
 
-class Helipad extends Group {
+class Helipad extends GameObject {
 
     Ellipse ellipse;
     Rectangle rectangle;
@@ -116,11 +124,11 @@ class Helipad extends Group {
         ellipse.setStroke(Color.GRAY);
         rectangle = new Rectangle(80, 80);
         rectangle.setStroke(Color.GRAY);
-        getChildren().add(rectangle);
-        getChildren().add(ellipse);
+        add(rectangle);
+        add(ellipse);
         ellipse.setTranslateX(40);
         ellipse.setTranslateY(40);
-        //translate(150, 10);
+        translate(150, 10);
     }
 }
 
@@ -135,22 +143,16 @@ class Game extends Pane {
     Helipad helipad;
     Helicopter helicopter;
     Cloud cloud;
-    Random r;
-    int low = 800 / 3;
-    int high;
-    int result;
     public Game() {
         helipad = new Helipad();
         cloud = new Cloud();
-        r = new Random();
-        high = 800 - cloud.getHeight();
-        result = r.nextInt(high-low) + low;
-        helipad.setTranslateX(150);
-        helipad.setTranslateY(10);
+
+//        helipad.setTranslateX(150);
+//        helipad.setTranslateY(10);
         //helipad.translate(150, 10);
         //cloud.translate(300, 500);
-        cloud.setTranslateY(result);
-        cloud.setTranslateX((Math.random() * 400) - cloud.getWidth());
+//        cloud.setTranslateY(result);
+//        cloud.setTranslateX((Math.random() * 400) - cloud.getWidth());
         getChildren().addAll(cloud, helipad);
         setPrefSize(400, 800);
 
