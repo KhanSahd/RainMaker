@@ -1,40 +1,57 @@
 package com.example.RainMaker;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
 
+import java.util.EventListener;
 import java.util.Random;
 
 interface Updatable {
     void update();
 }
 
-class GameText {
+class GameText extends GameObject {
 
     private Label s;
-    GameText(int percent){
+    Color color;
+    Boolean isPercent;
+
+    GameText(int percent, Boolean isPercentage){
+        isPercent = isPercentage;
+        if (isPercent){
         s = new Label(percent + "%");
+        } else {
+            s = new Label("F:" + percent);
+        }
+        color = Color.BLUE;
+        s.setTextFill(color);
         s.setScaleY(-1);
+        add(s);
     }
 
-    public Label getString(){
-        return s;
+
+
+    public void changeColor(Color c){
+        color = c;
+        s.setTextFill(color);
     }
 
-    public void setString(int percent){
-        s.setText(percent + "%");
-    }
 }
 
 abstract class GameObject extends Group {
@@ -89,16 +106,11 @@ class Pond {
 class Cloud extends GameObject {
 
     Ellipse ellipse;
-    int count = 0;
-    GameText perc;
-
+    GameText percent;
     Random r;
-    int low = 800 / 3;
-    int lowW;
-    int high;
-    int highW;
-    int result;
-    int resultW;
+    int low = 800 / 3; int lowW;
+    int high; int highW;
+    int result; int resultW;
 
     Cloud(){
         ellipse = new Ellipse(60, 60);
@@ -111,6 +123,9 @@ class Cloud extends GameObject {
         ellipse.setFill(Color.WHITE);
         add(ellipse);
         translate(resultW, result);
+        percent = new GameText(0, true);
+        add(percent);
+        percent.translate(-8, -5);
 
     }
 }
@@ -128,14 +143,41 @@ class Helipad extends GameObject {
         add(ellipse);
         ellipse.setTranslateX(40);
         ellipse.setTranslateY(40);
-        translate(150, 10);
+        translate(150, 20);
     }
 }
 
-class Helicopter extends Group {
-    Helicopter(){
+class Helicopter extends GameObject {
 
+    Ellipse e;
+    Line l;
+    Color color = Color.YELLOW;
+    int fuel;
+    GameText fText;
+
+    Point2D loc = new Point2D(190, 60);
+
+    Helicopter(){
+        e = new Ellipse(10, 10);
+        l = new Line(0, 0, 0, 25);
+        fuel = 25000;
+        fText = new GameText(fuel, false);
+        e.setFill(color);
+        l.setStroke(color);
+        add(e);
+        add(l);
+        add(fText);
+        fText.translate(-25, -30);
+        fText.changeColor(Color.YELLOW);
+        translate(loc.getX(), loc.getY());
     }
+
+    public void handleKeyPress(KeyEvent evt){
+        if(evt.getCode() == KeyCode.UP){
+            translate(loc.getX() + 1, loc.getY() + 1);
+        }
+    }
+
 }
 
 class Game extends Pane {
@@ -146,17 +188,13 @@ class Game extends Pane {
     public Game() {
         helipad = new Helipad();
         cloud = new Cloud();
-
-//        helipad.setTranslateX(150);
-//        helipad.setTranslateY(10);
-        //helipad.translate(150, 10);
-        //cloud.translate(300, 500);
-//        cloud.setTranslateY(result);
-//        cloud.setTranslateX((Math.random() * 400) - cloud.getWidth());
-        getChildren().addAll(cloud, helipad);
+        helicopter = new Helicopter();
+        getChildren().addAll(cloud, helipad, helicopter);
         setPrefSize(400, 800);
 
     }
+
+
 
 }
 
@@ -166,23 +204,18 @@ public class GameApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        Group root = new Group();
         Game game = new Game();
-        Scene scene = new Scene(game, GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
+        root.getChildren().add(game);
+        Scene scene = new Scene(root, GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
         primaryStage.setTitle("GAME_WINDOW_TITLE");
         primaryStage.setScene(scene);
         game.setScaleY(-1);
         primaryStage.setResizable(false);
 
+
         primaryStage.show();
 
-    }
-
-    public int getGameWidth(){
-        return GAME_WIDTH;
-    }
-
-    public int getGameHeight(){
-        return GAME_HEIGHT;
     }
 
     public static void main(String[] args) {
