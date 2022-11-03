@@ -176,15 +176,49 @@ class Helicopter extends GameObject {
 
     public void handleKeyPress(KeyEvent evt){
         if(evt.getCode() == KeyCode.UP){
+            if(getMyRotation() == 0.0){
             y += 5;
             translate(x, y);
+            }
+            if(getMyRotation() == 90.0){
+                x -= 5;
+                translate(x, y);
+            }
+            if(getMyRotation() < 0 ){
+                y+= 5;
+                x += 5;
+                translate(x,y);
+            }
+            if(getMyRotation() > 0 && getMyRotation() < 90.0){
+                y += 5;
+                x -= 5;
+                translate(x,y);
+            }
+            if(getMyRotation() > 90.0 && getMyRotation() < 180.0){
+                y -= 5;
+                x -= 5;
+                translate(x, y);
+            }
+            if (getMyRotation() == 180.0){
+                y -= 5;
+                translate(x, y);
+            }
+            if(getMyRotation() > 180.0 && getMyRotation() < -90.0){
+                y -= 5;
+                x += 5;
+                translate(x, y);
+            }
+
         }
 
         if(evt.getCode() == KeyCode.RIGHT){
             rotate(getMyRotation() - 3);
+            System.out.println(getMyRotation());
+
         }
         if(evt.getCode() == KeyCode.LEFT){
             rotate(getMyRotation() + 3);
+            System.out.println(getMyRotation());
         }
     }
 
