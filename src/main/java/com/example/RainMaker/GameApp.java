@@ -1,6 +1,5 @@
 package com.example.RainMaker;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
@@ -18,8 +17,6 @@ import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
-
-import java.util.EventListener;
 import java.util.Random;
 
 interface Updatable {
@@ -45,6 +42,9 @@ class GameText extends GameObject {
         add(s);
     }
 
+    public void setText(int percent){
+        s.setText(percent + "%");
+    }
 
 
     public void changeColor(Color c){
@@ -99,11 +99,7 @@ abstract class GameObject extends Group {
 
 }
 
-class Pond {
-
-}
-
-class Cloud extends GameObject {
+class Pond extends GameObject implements Updatable {
 
     Ellipse ellipse;
     GameText percent;
@@ -111,6 +107,45 @@ class Cloud extends GameObject {
     int low = 800 / 3; int lowW;
     int high; int highW;
     int result; int resultW;
+    double radius;
+
+    Pond(){
+        radius = Math.random() * 60;
+        ellipse = new Ellipse(radius, radius);
+        r = new Random();
+        high = 800 - (int)ellipse.getRadiusY();
+        lowW = (int)ellipse.getRadiusX();
+        highW = 400 - (int)ellipse.getRadiusX();
+        result = r.nextInt(high-low) + low;
+        resultW = r.nextInt(highW - lowW) + lowW;
+        ellipse.setFill(Color.BLUE);
+        add(ellipse);
+        translate(resultW, result);
+        percent = new GameText((int)radius, true);
+        percent.changeColor(Color.WHITE);
+        add(percent);
+        percent.translate(-8, -5);
+    }
+
+    public void update(){
+        result = r.nextInt(high-low) + low;
+        resultW = r.nextInt(highW - lowW) + lowW;
+        translate(resultW, result);
+    }
+
+}
+
+class Cloud extends GameObject implements Updatable {
+
+    Ellipse ellipse;
+    GameText percent;
+    Random r;
+    int low = 800 / 3; int lowW;
+    int high; int highW;
+    int result; int resultW;
+    int rgbColor = 255;
+    int saturation = 0;
+    Boolean isRaining = false;
 
     Cloud(){
         ellipse = new Ellipse(60, 60);
@@ -120,14 +155,27 @@ class Cloud extends GameObject {
         highW = 400 - (int)ellipse.getRadiusX();
         result = r.nextInt(high-low) + low;
         resultW = r.nextInt(highW - lowW) + lowW;
-        ellipse.setFill(Color.WHITE);
+        ellipse.setFill(Color.rgb(rgbColor,rgbColor,rgbColor));
         add(ellipse);
         translate(resultW, result);
-        percent = new GameText(0, true);
+        percent = new GameText(saturation, true);
         add(percent);
         percent.translate(-8, -5);
 
     }
+
+    public void update(){
+            if (saturation < 100){
+                rgbColor -= 1;
+                ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
+                saturation++;
+                percent.setText(saturation);
+                if (saturation == 30){
+                    isRaining = true;
+                }
+            }
+    }
+
 }
 
 class Helipad extends GameObject {
@@ -216,6 +264,7 @@ class Helicopter extends GameObject {
             System.out.println(getMyRotation());
 
         }
+
         if(evt.getCode() == KeyCode.LEFT){
             rotate(getMyRotation() + 3);
             System.out.println(getMyRotation());
@@ -229,11 +278,19 @@ class Game extends Pane {
     Helipad helipad;
     Helicopter helicopter;
     Cloud cloud;
+    Pond pond;
+
     public Game() {
         helipad = new Helipad();
         cloud = new Cloud();
         helicopter = new Helicopter();
-        getChildren().addAll(cloud, helipad, helicopter);
+        pond = new Pond();
+        if (pond.resultW > cloud.resultW && pond.resultW < cloud.resultW + cloud.ellipse.getRadiusX()){
+            if(pond.result < cloud.result && pond.result > cloud.result + cloud.ellipse.getRadiusY()){
+                pond.update();
+            }
+        }
+        getChildren().addAll(pond, cloud, helipad, helicopter);
         setPrefSize(400, 800);
 
     }
@@ -252,11 +309,17 @@ public class GameApp extends Application {
         Game game = new Game();
         root.getChildren().add(game);
         Scene scene = new Scene(root, GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
-        scene.setOnKeyPressed(e -> game.helicopter.handleKeyPress(e));
+        scene.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.SPACE){
+                game.cloud.update();
+            }
+            game.helicopter.handleKeyPress(e);
+        });
         primaryStage.setTitle("GAME_WINDOW_TITLE");
         primaryStage.setScene(scene);
         game.setScaleY(-1);
         primaryStage.setResizable(false);
+        System.out.println(game.pond.radius);
 
 
         primaryStage.show();
