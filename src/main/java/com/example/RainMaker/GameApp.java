@@ -1,6 +1,8 @@
 package com.example.RainMaker;
 
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -13,11 +15,15 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 import javafx.stage.Stage;
+
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 interface Updatable {
     void update();
@@ -52,12 +58,17 @@ class GameText extends GameObject {
         s.setTextFill(color);
     }
 
+    @Override
+    Shape getShapeBounds() {
+        return null;
+    }
 }
 
 abstract class GameObject extends Group {
     protected Translate myTranslation;
     protected Rotate myRotation;
     protected Scale myScale;
+    Boolean alive;
 
     public GameObject() {
         myTranslation = new Translate();
@@ -97,6 +108,13 @@ abstract class GameObject extends Group {
         this.getChildren().add(node);
     }
 
+    abstract Shape getShapeBounds();
+
+    public boolean intersects(GameObject obj){
+        return alive && obj.alive &&
+                !Shape.intersect(getShapeBounds(), obj.getShapeBounds()).getBoundsInLocal().isEmpty();
+    }
+
 }
 
 class Pond extends GameObject implements Updatable {
@@ -110,6 +128,7 @@ class Pond extends GameObject implements Updatable {
     double radius;
 
     Pond(){
+        alive = true;
         radius = Math.random() * 60;
         ellipse = new Ellipse(radius, radius);
         r = new Random();
@@ -133,6 +152,11 @@ class Pond extends GameObject implements Updatable {
         translate(resultW, result);
     }
 
+    @Override
+    Shape getShapeBounds() {
+        return ellipse;
+    }
+
 }
 
 class Cloud extends GameObject implements Updatable {
@@ -148,6 +172,7 @@ class Cloud extends GameObject implements Updatable {
     Boolean isRaining = false;
 
     Cloud(){
+        alive = true;
         ellipse = new Ellipse(60, 60);
         r = new Random();
         high = 800 - (int)ellipse.getRadiusY();
@@ -176,6 +201,11 @@ class Cloud extends GameObject implements Updatable {
             }
     }
 
+    @Override
+    Shape getShapeBounds() {
+        return ellipse;
+    }
+
 }
 
 class Helipad extends GameObject {
@@ -183,6 +213,7 @@ class Helipad extends GameObject {
     Ellipse ellipse;
     Rectangle rectangle;
     Helipad(){
+        alive = true;
         ellipse = new Ellipse(30, 30);
         ellipse.setStroke(Color.GRAY);
         rectangle = new Rectangle(80, 80);
@@ -193,24 +224,34 @@ class Helipad extends GameObject {
         ellipse.setTranslateY(40);
         translate(150, 20);
     }
+
+    @Override
+    Shape getShapeBounds() {
+        return ellipse;
+    }
 }
 
-class Helicopter extends GameObject {
+class Helicopter extends GameObject implements Updatable {
 
     Ellipse e;
     Line l;
     Color color = Color.YELLOW;
     int fuel;
     GameText fText;
-
+    int speed = 5;
+    //double angle =
     int y = 60;
     int x = 190;
     Point2D loc = new Point2D(x, y);
+    double rotation;
+
 
     Helicopter(){
+        alive = true;
         e = new Ellipse(10, 10);
         l = new Line(0, 0, 0, 25);
         fuel = 25000;
+        rotation = Math.toRadians(getMyRotation());
         fText = new GameText(fuel, false);
         e.setFill(color);
         l.setStroke(color);
@@ -220,53 +261,81 @@ class Helicopter extends GameObject {
         fText.translate(-25, -30);
         fText.changeColor(Color.YELLOW);
         translate(loc.getX(), loc.getY());
+
     }
 
-    public void handleKeyPress(KeyEvent evt){
-        if(evt.getCode() == KeyCode.UP){
-            if(getMyRotation() == 0.0){
-            y += 5;
-            translate(x, y);
-            }
-            if(getMyRotation() == 90.0){
-                x -= 5;
-                translate(x, y);
-            }
-            if(getMyRotation() < 0 ){
-                y+= 5;
-                x += 5;
-                translate(x,y);
-            }
-            if(getMyRotation() > 0 && getMyRotation() < 90.0){
-                y += 5;
-                x -= 5;
-                translate(x,y);
-            }
-            if(getMyRotation() > 90.0 && getMyRotation() < 180.0){
-                y -= 5;
-                x -= 5;
-                translate(x, y);
-            }
-            if (getMyRotation() == 180.0){
-                y -= 5;
-                translate(x, y);
-            }
-            if(getMyRotation() > 180.0 && getMyRotation() < -90.0){
-                y -= 5;
-                x += 5;
-                translate(x, y);
-            }
+    @Override
+    Shape getShapeBounds() {
+        return e;
+    }
 
-        }
+    public void update(){
+        //loc = loc.add(speed * Math.sin(getMyRotation()), speed * Math.cos(getMyRotation()));
+        x += speed * Math.sin(rotation);
+        y += speed * Math.cos(rotation);
+        translate(x, y);
+    }
 
+
+     public void handleKeyPress(KeyEvent evt){
+//        if(evt.getCode() == KeyCode.UP){
+//            if(getMyRotation() == 0.0){
+//            y += 5;
+//            translate(x, y);
+//            }
+//            if(getMyRotation() == 90.0){
+//                x -= 5;
+//                translate(x, y);
+//            }
+//            if(getMyRotation() < 0 ){
+//                y+= 5;
+//                x += 5;
+//                translate(x,y);
+//            }
+//            if(getMyRotation() > 0 && getMyRotation() < 90.0){
+//                y += 5;
+//                x -= 5;
+//                translate(x,y);
+//            }
+//            if(getMyRotation() > 90.0 && getMyRotation() < 180.0){
+//                y -= 5;
+//                x -= 5;
+//                translate(x, y);
+//            }
+//            if (getMyRotation() == 180.0){
+//                y -= 5;
+//                translate(x, y);
+//            }
+//            if(getMyRotation() > 180.0 ){
+////                y -= 5;
+////                x += 5;
+////                translate(x, y);
+//                rotate((getMyRotation() - (getMyRotation() * 2)) + 30);
+//                System.out.println(getMyRotation());
+//            }
+//
+//            if(getMyRotation() > -90.0 && getMyRotation() < -180.0){
+//                y -= 5;
+//                x += 5;
+//                translate(x, y);
+//            }
+//
+//        }
+//
         if(evt.getCode() == KeyCode.RIGHT){
-            rotate(getMyRotation() - 3);
+            //rotate(getMyRotation() - 15);
+            rotation -= 15;
+            rotate(rotation);
+//            if (getMyRotation() < 0){
+//                rotate((getMyRotation() - 15) + 360);
+//            }
             System.out.println(getMyRotation());
 
         }
 
         if(evt.getCode() == KeyCode.LEFT){
-            rotate(getMyRotation() + 3);
+            rotation += 15;
+            rotate(rotation);
             System.out.println(getMyRotation());
         }
     }
@@ -274,6 +343,14 @@ class Helicopter extends GameObject {
 }
 
 class Game extends Pane {
+
+    static final int GAME_WIDTH = 400;
+    static final int GAME_HEIGHT = 800;
+
+    Set<KeyCode> keysDown = new HashSet<>();
+    int key(KeyCode k){
+        return keysDown.contains(k) ? 1 : 0;
+    }
 
     Helipad helipad;
     Helicopter helicopter;
@@ -295,34 +372,60 @@ class Game extends Pane {
 
     }
 
+    public void handleKeyPressed(KeyEvent e){
+        keysDown.add(e.getCode());
+    }
+
+    public void handleKeyReleased(KeyEvent e){
+        keysDown.remove(e.getCode());
+    }
 
 
 }
 
 public class GameApp extends Application {
-    private static final int GAME_WIDTH = 400;
-    private static final int GAME_HEIGHT = 800;
+
+//    private static final int GAME_WIDTH = 400;
+//    private static final int GAME_HEIGHT = 800;
+
 
     @Override
     public void start(Stage primaryStage) {
         Group root = new Group();
         Game game = new Game();
         root.getChildren().add(game);
-        Scene scene = new Scene(root, GAME_WIDTH, GAME_HEIGHT, Color.BLACK);
+        Scene scene = new Scene(root, game.GAME_WIDTH, game.GAME_HEIGHT, Color.BLACK);
         scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.SPACE){
-                game.cloud.update();
-            }
+            game.handleKeyPressed(e);
             game.helicopter.handleKeyPress(e);
         });
+
+        scene.setOnKeyReleased(e -> {
+            game.handleKeyReleased(e);
+        });
+
         primaryStage.setTitle("GAME_WINDOW_TITLE");
         primaryStage.setScene(scene);
         game.setScaleY(-1);
         primaryStage.setResizable(false);
-        System.out.println(game.pond.radius);
-
-
         primaryStage.show();
+
+        AnimationTimer gameLoop = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                if(game.helicopter.intersects(game.cloud)){
+                    if (game.key(KeyCode.SPACE) == 1){
+                        game.cloud.update();
+                    }
+                   }
+                if(game.key(KeyCode.UP) == 1){
+                    game.helicopter.update();
+                }
+
+                }
+        };
+
+        gameLoop.start();
 
     }
 
