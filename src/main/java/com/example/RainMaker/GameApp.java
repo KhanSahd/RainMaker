@@ -2,7 +2,6 @@ package com.example.RainMaker;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -35,10 +34,10 @@ class GameText extends GameObject {
     Color color;
     Boolean isPercent;
 
-    GameText(int percent, Boolean isPercentage){
+    GameText(int percent, Boolean isPercentage) {
         isPercent = isPercentage;
-        if (isPercent){
-        s = new Label(percent + "%");
+        if (isPercent) {
+            s = new Label(percent + "%");
         } else {
             s = new Label("F:" + percent);
         }
@@ -48,12 +47,11 @@ class GameText extends GameObject {
         add(s);
     }
 
-    public void setText(int percent){
+    public void setText(int percent) {
         s.setText(percent + "%");
     }
 
-
-    public void changeColor(Color c){
+    public void changeColor(Color c) {
         color = c;
         s.setTextFill(color);
     }
@@ -110,7 +108,7 @@ abstract class GameObject extends Group {
 
     abstract Shape getShapeBounds();
 
-    public boolean intersects(GameObject obj){
+    public boolean intersects(GameObject obj) {
         return alive && obj.alive &&
                 !Shape.intersect(getShapeBounds(), obj.getShapeBounds()).getBoundsInLocal().isEmpty();
     }
@@ -122,32 +120,35 @@ class Pond extends GameObject implements Updatable {
     Ellipse ellipse;
     GameText percent;
     Random r;
-    int low = 800 / 3; int lowW;
-    int high; int highW;
-    int result; int resultW;
+    int low = 800 / 3;
+    int lowW;
+    int high;
+    int highW;
+    int result;
+    int resultW;
     double radius;
 
-    Pond(){
+    Pond() {
         alive = true;
         radius = Math.random() * 60;
         ellipse = new Ellipse(radius, radius);
         r = new Random();
-        high = 800 - (int)ellipse.getRadiusY();
-        lowW = (int)ellipse.getRadiusX();
-        highW = 400 - (int)ellipse.getRadiusX();
-        result = r.nextInt(high-low) + low;
+        high = 800 - (int) ellipse.getRadiusY();
+        lowW = (int) ellipse.getRadiusX();
+        highW = 400 - (int) ellipse.getRadiusX();
+        result = r.nextInt(high - low) + low;
         resultW = r.nextInt(highW - lowW) + lowW;
         ellipse.setFill(Color.BLUE);
         add(ellipse);
         translate(resultW, result);
-        percent = new GameText((int)radius, true);
+        percent = new GameText((int) radius, true);
         percent.changeColor(Color.WHITE);
         add(percent);
         percent.translate(-8, -5);
     }
 
-    public void update(){
-        result = r.nextInt(high-low) + low;
+    public void update() {
+        result = r.nextInt(high - low) + low;
         resultW = r.nextInt(highW - lowW) + lowW;
         translate(resultW, result);
     }
@@ -164,23 +165,26 @@ class Cloud extends GameObject implements Updatable {
     Ellipse ellipse;
     GameText percent;
     Random r;
-    int low = 800 / 3; int lowW;
-    int high; int highW;
-    int result; int resultW;
+    int low = 800 / 3;
+    int lowW;
+    int high;
+    int highW;
+    int result;
+    int resultW;
     int rgbColor = 255;
     int saturation = 0;
     Boolean isRaining = false;
 
-    Cloud(){
+    Cloud() {
         alive = true;
         ellipse = new Ellipse(60, 60);
         r = new Random();
-        high = 800 - (int)ellipse.getRadiusY();
-        lowW = (int)ellipse.getRadiusX();
-        highW = 400 - (int)ellipse.getRadiusX();
-        result = r.nextInt(high-low) + low;
+        high = 800 - (int) ellipse.getRadiusY();
+        lowW = (int) ellipse.getRadiusX();
+        highW = 400 - (int) ellipse.getRadiusX();
+        result = r.nextInt(high - low) + low;
         resultW = r.nextInt(highW - lowW) + lowW;
-        ellipse.setFill(Color.rgb(rgbColor,rgbColor,rgbColor));
+        ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
         add(ellipse);
         translate(resultW, result);
         percent = new GameText(saturation, true);
@@ -189,16 +193,16 @@ class Cloud extends GameObject implements Updatable {
 
     }
 
-    public void update(){
-            if (saturation < 100){
-                rgbColor -= 1;
-                ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
-                saturation++;
-                percent.setText(saturation);
-                if (saturation == 30){
-                    isRaining = true;
-                }
+    public void update() {
+        if (saturation < 100) {
+            rgbColor -= 1;
+            ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
+            saturation++;
+            percent.setText(saturation);
+            if (saturation == 30) {
+                isRaining = true;
             }
+        }
     }
 
     @Override
@@ -212,7 +216,8 @@ class Helipad extends GameObject {
 
     Ellipse ellipse;
     Rectangle rectangle;
-    Helipad(){
+
+    Helipad() {
         alive = true;
         ellipse = new Ellipse(30, 30);
         ellipse.setStroke(Color.GRAY);
@@ -239,19 +244,18 @@ class Helicopter extends GameObject implements Updatable {
     int fuel;
     GameText fText;
     int speed = 5;
-    //double angle =
+    // double angle =
     int y = 60;
     int x = 190;
     Point2D loc = new Point2D(x, y);
     double rotation;
 
-
-    Helicopter(){
+    Helicopter() {
         alive = true;
         e = new Ellipse(10, 10);
         l = new Line(0, 0, 0, 25);
         fuel = 25000;
-        rotation = Math.toRadians(getMyRotation());
+        //rotation = Math.toRadians(getMyRotation());
         fText = new GameText(fuel, false);
         e.setFill(color);
         l.setStroke(color);
@@ -269,74 +273,21 @@ class Helicopter extends GameObject implements Updatable {
         return e;
     }
 
-    public void update(){
-        //loc = loc.add(speed * Math.sin(getMyRotation()), speed * Math.cos(getMyRotation()));
-        x += speed * Math.sin(rotation);
-        y += speed * Math.cos(rotation);
-        translate(x, y);
+    public void update() {
+        loc = loc.add(speed * Math.sin(-1*Math.PI*getMyRotation()/180), speed *
+        Math.cos(-1*Math.PI*getMyRotation()/180));
+//        x += speed * Math.sin(getMyRotation());
+//        y += speed * Math.cos(getMyRotation());
+        translate(loc.getX(), loc.getY());
     }
 
-
-     public void handleKeyPress(KeyEvent evt){
-//        if(evt.getCode() == KeyCode.UP){
-//            if(getMyRotation() == 0.0){
-//            y += 5;
-//            translate(x, y);
-//            }
-//            if(getMyRotation() == 90.0){
-//                x -= 5;
-//                translate(x, y);
-//            }
-//            if(getMyRotation() < 0 ){
-//                y+= 5;
-//                x += 5;
-//                translate(x,y);
-//            }
-//            if(getMyRotation() > 0 && getMyRotation() < 90.0){
-//                y += 5;
-//                x -= 5;
-//                translate(x,y);
-//            }
-//            if(getMyRotation() > 90.0 && getMyRotation() < 180.0){
-//                y -= 5;
-//                x -= 5;
-//                translate(x, y);
-//            }
-//            if (getMyRotation() == 180.0){
-//                y -= 5;
-//                translate(x, y);
-//            }
-//            if(getMyRotation() > 180.0 ){
-////                y -= 5;
-////                x += 5;
-////                translate(x, y);
-//                rotate((getMyRotation() - (getMyRotation() * 2)) + 30);
-//                System.out.println(getMyRotation());
-//            }
-//
-//            if(getMyRotation() > -90.0 && getMyRotation() < -180.0){
-//                y -= 5;
-//                x += 5;
-//                translate(x, y);
-//            }
-//
-//        }
-//
-        if(evt.getCode() == KeyCode.RIGHT){
-            //rotate(getMyRotation() - 15);
-            rotation -= 15;
-            rotate(rotation);
-//            if (getMyRotation() < 0){
-//                rotate((getMyRotation() - 15) + 360);
-//            }
-            System.out.println(getMyRotation());
-
+    public void handleKeyPress(KeyEvent evt) {
+        if (evt.getCode() == KeyCode.RIGHT) {
+            rotate(getMyRotation() - 15);
         }
 
-        if(evt.getCode() == KeyCode.LEFT){
-            rotation += 15;
-            rotate(rotation);
-            System.out.println(getMyRotation());
+        if (evt.getCode() == KeyCode.LEFT) {
+            rotate(getMyRotation() + 15);
         }
     }
 
@@ -348,7 +299,8 @@ class Game extends Pane {
     static final int GAME_HEIGHT = 800;
 
     Set<KeyCode> keysDown = new HashSet<>();
-    int key(KeyCode k){
+
+    int key(KeyCode k) {
         return keysDown.contains(k) ? 1 : 0;
     }
 
@@ -362,8 +314,8 @@ class Game extends Pane {
         cloud = new Cloud();
         helicopter = new Helicopter();
         pond = new Pond();
-        if (pond.resultW > cloud.resultW && pond.resultW < cloud.resultW + cloud.ellipse.getRadiusX()){
-            if(pond.result < cloud.result && pond.result > cloud.result + cloud.ellipse.getRadiusY()){
+        if (pond.resultW > cloud.resultW && pond.resultW < cloud.resultW + cloud.ellipse.getRadiusX()) {
+            if (pond.result < cloud.result && pond.result > cloud.result + cloud.ellipse.getRadiusY()) {
                 pond.update();
             }
         }
@@ -372,22 +324,20 @@ class Game extends Pane {
 
     }
 
-    public void handleKeyPressed(KeyEvent e){
+    public void handleKeyPressed(KeyEvent e) {
         keysDown.add(e.getCode());
     }
 
-    public void handleKeyReleased(KeyEvent e){
+    public void handleKeyReleased(KeyEvent e) {
         keysDown.remove(e.getCode());
     }
-
 
 }
 
 public class GameApp extends Application {
 
-//    private static final int GAME_WIDTH = 400;
-//    private static final int GAME_HEIGHT = 800;
-
+    // private static final int GAME_WIDTH = 400;
+    // private static final int GAME_HEIGHT = 800;
 
     @Override
     public void start(Stage primaryStage) {
@@ -413,16 +363,16 @@ public class GameApp extends Application {
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if(game.helicopter.intersects(game.cloud)){
-                    if (game.key(KeyCode.SPACE) == 1){
+                if (game.helicopter.intersects(game.cloud)) {
+                    if (game.key(KeyCode.SPACE) == 1) {
                         game.cloud.update();
                     }
-                   }
-                if(game.key(KeyCode.UP) == 1){
+                }
+                if (game.key(KeyCode.UP) == 1) {
                     game.helicopter.update();
                 }
 
-                }
+            }
         };
 
         gameLoop.start();
@@ -432,6 +382,5 @@ public class GameApp extends Application {
     public static void main(String[] args) {
         Application.launch();
     }
-
 
 }
