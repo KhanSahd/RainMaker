@@ -15,6 +15,7 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -47,8 +48,22 @@ class GameText extends GameObject {
         add(s);
     }
 
+    GameText(String text){
+        isPercent = false;
+        s = new Label(text);
+        color = Color.BLUE;
+        s.setTextFill(color);
+        s.setScaleY(-1);
+        s.setFont(new Font("Robot", 30));
+        add(s);
+    }
+
     public void setText(int percent) {
-        s.setText(percent + "%");
+        if(isPercent){
+            s.setText(percent + "%");
+        } else {
+            s.setText("F: " + percent);
+        }
     }
 
     public void changeColor(Color c) {
@@ -243,7 +258,7 @@ class Helicopter extends GameObject implements Updatable {
     Color color = Color.YELLOW;
     int fuel;
     GameText fText;
-    int speed = 5;
+    int speed = 3;
     // double angle =
     int y = 60;
     int x = 190;
@@ -276,9 +291,11 @@ class Helicopter extends GameObject implements Updatable {
     public void update() {
         loc = loc.add(speed * Math.sin(-1*Math.PI*getMyRotation()/180), speed *
         Math.cos(-1*Math.PI*getMyRotation()/180));
-//        x += speed * Math.sin(getMyRotation());
-//        y += speed * Math.cos(getMyRotation());
         translate(loc.getX(), loc.getY());
+        if(fuel > 0){
+            fuel -= 10;
+            fText.setText(fuel);
+        }
     }
 
     public void handleKeyPress(KeyEvent evt) {
@@ -308,6 +325,7 @@ class Game extends Pane {
     Helicopter helicopter;
     Cloud cloud;
     Pond pond;
+    GameText gameOver;
 
     public Game() {
         helipad = new Helipad();
@@ -332,6 +350,16 @@ class Game extends Pane {
         keysDown.remove(e.getCode());
     }
 
+    public void checkGameStatus(){
+        if(helicopter.fuel == 0){
+            gameOver = new GameText("Game Over!");
+            gameOver.translate((GAME_WIDTH / 2) - 80, GAME_HEIGHT / 2 + 30);
+            gameOver.changeColor(Color.RED);
+            getChildren().removeAll(pond, cloud, helicopter, helipad);
+            getChildren().add(gameOver);
+        }
+    }
+
 }
 
 public class GameApp extends Application {
@@ -348,6 +376,11 @@ public class GameApp extends Application {
         scene.setOnKeyPressed(e -> {
             game.handleKeyPressed(e);
             game.helicopter.handleKeyPress(e);
+            if (game.helicopter.intersects(game.cloud)) {
+                if (game.key(KeyCode.SPACE) == 1) {
+                    game.cloud.update();
+                }
+            }
         });
 
         scene.setOnKeyReleased(e -> {
@@ -363,15 +396,11 @@ public class GameApp extends Application {
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (game.helicopter.intersects(game.cloud)) {
-                    if (game.key(KeyCode.SPACE) == 1) {
-                        game.cloud.update();
-                    }
-                }
                 if (game.key(KeyCode.UP) == 1) {
                     game.helicopter.update();
                 }
 
+                game.checkGameStatus();
             }
         };
 
