@@ -168,6 +168,12 @@ class Pond extends GameObject implements Updatable {
         translate(resultW, result);
     }
 
+    public void makeRain(int sat){
+        radius += sat;
+        ellipse.setRadiusX(radius);
+        ellipse.setRadiusY(radius);
+    }
+
     @Override
     Shape getShapeBounds() {
         return ellipse;
@@ -187,7 +193,7 @@ class Cloud extends GameObject implements Updatable {
     int result;
     int resultW;
     int rgbColor = 255;
-    int saturation = 0;
+    double saturation = 0;
     Boolean isRaining = false;
 
     Cloud() {
@@ -202,7 +208,7 @@ class Cloud extends GameObject implements Updatable {
         ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
         add(ellipse);
         translate(resultW, result);
-        percent = new GameText(saturation, true);
+        percent = new GameText((int)saturation, true);
         add(percent);
         percent.translate(-8, -5);
 
@@ -213,12 +219,14 @@ class Cloud extends GameObject implements Updatable {
             rgbColor -= 1;
             ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
             saturation++;
-            percent.setText(saturation);
+            percent.setText((int)saturation);
             if (saturation == 30) {
                 isRaining = true;
             }
         }
     }
+
+
 
     @Override
     Shape getShapeBounds() {
@@ -258,15 +266,16 @@ class Helicopter extends GameObject implements Updatable {
     Color color = Color.YELLOW;
     int fuel;
     GameText fText;
-    int speed = 3;
+    double speed = 0.0;
     // double angle =
     int y = 60;
     int x = 190;
     Point2D loc = new Point2D(x, y);
-    double rotation;
+    Boolean engineOn;
 
     Helicopter() {
         alive = true;
+        engineOn = false;
         e = new Ellipse(10, 10);
         l = new Line(0, 0, 0, 25);
         fuel = 25000;
@@ -308,6 +317,23 @@ class Helicopter extends GameObject implements Updatable {
         }
     }
 
+    public void startEngine() {
+        if(speed < 0.1 && speed > -0.01){
+            engineOn = !engineOn;
+        }
+    }
+
+    public void increaseSpeed(){
+        if(engineOn){
+            speed += 0.1;
+        }
+    }
+    public void decreaseSpeed(){
+        if(engineOn){
+            speed -= 0.1;
+        }
+
+    }
 }
 
 class Game extends Pane {
@@ -360,6 +386,10 @@ class Game extends Pane {
         }
     }
 
+    public void init(){
+
+    }
+
 }
 
 public class GameApp extends Application {
@@ -381,6 +411,16 @@ public class GameApp extends Application {
                     game.cloud.update();
                 }
             }
+
+            if(e.getCode() == KeyCode.I){
+                game.helicopter.startEngine();
+            }
+            if(e.getCode() == KeyCode.UP){
+                game.helicopter.increaseSpeed();
+            }
+            if(e.getCode() == KeyCode.DOWN){
+                game.helicopter.decreaseSpeed();
+            }
         });
 
         scene.setOnKeyReleased(e -> {
@@ -396,11 +436,11 @@ public class GameApp extends Application {
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                if (game.key(KeyCode.UP) == 1) {
+                if(game.helicopter.engineOn){
                     game.helicopter.update();
                 }
-
                 game.checkGameStatus();
+                System.out.println(game.helicopter.speed);
             }
         };
 
