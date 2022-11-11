@@ -11,7 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -355,7 +354,7 @@ class Helicopter extends GameObject implements Updatable {
         Math.cos(-1*Math.PI*getMyRotation()/180));
         translate(loc.getX(), loc.getY());
         if(fuel > 0){
-            fuel -= 5;
+            fuel -= 500;
             fText.setText(fuel);
         }
         if(engineOn){
@@ -470,7 +469,7 @@ class Game extends Pane {
 
     public void checkGameStatus(){
         if(helicopter.fuel == 0){
-            gameOver = new GameText("Game Over!");
+            gameOver = new GameText("Game Over! \n Press 'R' to restart");
             gameOver.translate((GAME_WIDTH / 2) - 80, GAME_HEIGHT / 2 + 30);
             gameOver.changeColor(Color.RED);
             getChildren().removeAll(pond, cloud, helicopter, helipad);
@@ -479,6 +478,7 @@ class Game extends Pane {
     }
 
     public void init() throws FileNotFoundException {
+        //getChildren().remove(gameOver);
         getChildren().removeAll(pond, cloud, helicopter, helipad);
         helipad = new Helipad();
         helicopter = new Helicopter();
