@@ -183,7 +183,7 @@ class Pond extends GameObject implements Updatable {
 
     public void makeRain(int sat){
         if (radius < 100){
-            radius = radius + 0.5;
+            radius = radius + (sat * 0.01);
             ellipse.setRadiusX(radius);
             ellipse.setRadiusY(radius);
             percent.setText((int)radius);
@@ -211,14 +211,15 @@ class Cloud extends GameObject implements Updatable {
     int rgbColor = 255;
     double saturation = 0;
     Boolean isRaining = false;
+    Boolean isSeeding = false;
 
     Cloud() {
         alive = true;
-        ellipse = new Ellipse(60, 60);
+        ellipse = new Ellipse(60,  60);
         r = new Random();
-        high = 800 - (int) ellipse.getRadiusY();
+        high = Game.GAME_HEIGHT - (int) ellipse.getRadiusY();
         lowW = (int) ellipse.getRadiusX();
-        highW = 400 - (int) ellipse.getRadiusX();
+        highW = Game.GAME_WIDTH - (int) ellipse.getRadiusX();
         result = r.nextInt(high - low) + low;
         resultW = r.nextInt(highW - lowW) + lowW;
         ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
@@ -230,17 +231,33 @@ class Cloud extends GameObject implements Updatable {
 
     }
 
-    public void update() {
-        if (saturation < 100) {
-            rgbColor -= 1;
-            ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
-            saturation++;
-            percent.setText((int)saturation);
-            if (saturation == 30) {
-                isRaining = true;
+    public void update(Boolean seeding) {
+        if(seeding == true){
+            if (saturation < 100) {
+                rgbColor -= 1;
+                ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
+                saturation++;
+                percent.setText((int)saturation);
+                if (saturation == 30) {
+                    isRaining = true;
+                }
+            }
+        }
+        if(seeding == false){
+            if (saturation > 0){
+                if (rgbColor < 255){
+                    rgbColor += 1;
+                }
+                ellipse.setFill(Color.rgb(rgbColor,rgbColor,rgbColor));
+                saturation -= 0.6;
+                percent.setText((int) saturation);
+                if (saturation < 30){
+                    isRaining = false;
+                }
             }
         }
     }
+
 
     public double getSaturation(){
         return saturation;
@@ -257,8 +274,6 @@ class Cloud extends GameObject implements Updatable {
 
 class Helipad extends GameObject {
 
-    Ellipse ellipse;
-    Rectangle rectangle;
 
     Helipad() throws FileNotFoundException {
         alive = true;
@@ -268,8 +283,12 @@ class Helipad extends GameObject {
         helipad.setFitWidth(80);
         helipad.setFitHeight(80);
         helipad.preserveRatioProperty();
+        Rectangle rct = new Rectangle(helipad.getFitWidth() + 15, helipad.getFitWidth() + 15, Color.WHITE);
+        rct.setTranslateX(-7);
+        rct.setTranslateY(-7);
+        add(rct);
         add(helipad);
-        translate(150, 20);
+        translate(150, 30);
     }
 
     @Override
@@ -336,7 +355,7 @@ class Helicopter extends GameObject implements Updatable {
         Math.cos(-1*Math.PI*getMyRotation()/180));
         translate(loc.getX(), loc.getY());
         if(fuel > 0){
-            fuel -= 10;
+            fuel -= 5;
             fText.setText(fuel);
         }
         if(engineOn){
@@ -380,7 +399,7 @@ class HeliBlades extends GameObject {
 
     Rectangle line1, line2;
 
-    HeliBlades() throws FileNotFoundException {
+    HeliBlades() {
         alive = true;
         Rectangle line1 = new Rectangle(3, 30);
         line1.setScaleY(2);
@@ -405,7 +424,7 @@ class HeliBlades extends GameObject {
 
 class Game extends Pane {
 
-    static final int GAME_WIDTH = 400;
+    static final int GAME_WIDTH = 600;
     static final int GAME_HEIGHT = 800;
 
     Set<KeyCode> keysDown = new HashSet<>();
@@ -425,19 +444,19 @@ class Game extends Pane {
         cloud = new Cloud();
         helicopter = new Helicopter();
         pond = new Pond();
-        FileInputStream file = new FileInputStream("images/background.jpeg");
-        Image img = new Image(file);
-        ImageView bg = new ImageView(img);
-        bg.setFitWidth(GAME_WIDTH);
-        bg.setFitHeight(GAME_HEIGHT);
-        bg.setTranslateY(GAME_HEIGHT - GAME_HEIGHT);
+//        FileInputStream file = new FileInputStream("images/background.jpeg");
+//        Image img = new Image(file);
+//        ImageView bg = new ImageView(img);
+//        bg.setFitWidth(GAME_WIDTH);
+//        bg.setFitHeight(GAME_HEIGHT);
+//        bg.setTranslateY(GAME_HEIGHT - GAME_HEIGHT);
         if (pond.resultW > cloud.resultW && pond.resultW < cloud.resultW + cloud.ellipse.getRadiusX()) {
             if (pond.result < cloud.result && pond.result > cloud.result + cloud.ellipse.getRadiusY()) {
                 pond.update();
             }
         }
-        getChildren().addAll(bg, pond, cloud, helipad, helicopter);
-        setPrefSize(400, 800);
+        getChildren().addAll(pond, cloud, helipad, helicopter);
+        setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
     }
 
@@ -459,8 +478,13 @@ class Game extends Pane {
         }
     }
 
-    public void init(){
-
+    public void init() throws FileNotFoundException {
+        getChildren().removeAll(pond, cloud, helicopter, helipad);
+        helipad = new Helipad();
+        helicopter = new Helicopter();
+        cloud = new Cloud();
+        pond = new Pond();
+        getChildren().addAll(pond, cloud, helipad, helicopter);
     }
 
 }
@@ -481,8 +505,12 @@ public class GameApp extends Application {
             game.helicopter.handleKeyPress(e);
             if (game.helicopter.intersects(game.cloud)) {
                 if (game.key(KeyCode.SPACE) == 1) {
-                    game.cloud.update();
+                    game.cloud.update(true);
                 }
+
+            }
+            if(game.key(KeyCode.SPACE) == 0){
+                game.cloud.update(false);
             }
 
             if(game.cloud.getSaturation() >= 30){
@@ -497,6 +525,13 @@ public class GameApp extends Application {
             }
             if(e.getCode() == KeyCode.DOWN){
                 game.helicopter.decreaseSpeed();
+            }
+            if(e.getCode() == KeyCode.R){
+                try {
+                    game.init();
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
