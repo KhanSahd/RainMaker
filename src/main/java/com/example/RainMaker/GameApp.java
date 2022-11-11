@@ -318,7 +318,6 @@ class Helicopter extends GameObject implements Updatable {
         e = new Ellipse(10, 10);
         l = new Line(0, 0, 0, 25);
         fuel = 25000;
-
         /* HELICOPTER */
         FileInputStream file = new FileInputStream("images/helicopter.png");
         Image heli = new Image(file);
@@ -327,8 +326,7 @@ class Helicopter extends GameObject implements Updatable {
         img1.setPreserveRatio(true);
         img1.setRotate(180);
         img1.setTranslateX(-40);
-        img1.setTranslateY(-40);
-        /* END OF HELICOPTER */
+        img1.setTranslateY(-35);
 
         /* PROPELLERS  */
         blades = new HeliBlades();
@@ -406,6 +404,7 @@ class HeliBlades extends GameObject {
         line1 = new Rectangle(3, 30);
         line1.setScaleY(2);
         line1.setTranslateY(-15);
+        line1.setTranslateX(-1);
         add(line1);
         line2 = new Rectangle(3, 30);
         line2.setRotate(90);
