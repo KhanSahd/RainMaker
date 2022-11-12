@@ -2,6 +2,7 @@ package com.example.RainMaker;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -11,6 +12,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -25,6 +29,7 @@ import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.security.Key;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -180,6 +185,10 @@ class Pond extends GameObject implements Updatable {
         }
     }
 
+    public double getRadius(){
+        return radius;
+    }
+
     public void makeRain(int sat){
         if (radius < 100){
             radius = radius + (sat * 0.01);
@@ -273,9 +282,13 @@ class Cloud extends GameObject implements Updatable {
 
 class Helipad extends GameObject {
 
+    Rectangle shapeBound;
+    Boolean isShowing;
+
 
     Helipad() throws FileNotFoundException {
         alive = true;
+        isShowing = false;
         FileInputStream file = new FileInputStream("images/helipad.png");
         Image img = new Image(file);
         ImageView helipad = new ImageView(img);
@@ -285,14 +298,24 @@ class Helipad extends GameObject {
         Rectangle rct = new Rectangle(helipad.getFitWidth() + 15, helipad.getFitWidth() + 15, Color.WHITE);
         rct.setTranslateX(-7);
         rct.setTranslateY(-7);
+        shapeBound = new Rectangle(rct.getWidth() + 5, rct.getHeight() + 5);
+        shapeBound.setFill(Color.TAN);
+        //shapeBound.setStroke(Color.YELLOW);
+        shapeBound.setTranslateX(-9);
+        shapeBound.setTranslateY(-9);
+        add(shapeBound);
         add(rct);
         add(helipad);
         translate(150, 30);
     }
 
+
+
+
+
     @Override
     Shape getShapeBounds() {
-        return null;
+        return shapeBound;
     }
 }
 
@@ -301,13 +324,15 @@ class Helicopter extends GameObject implements Updatable {
     Ellipse e;
     Line l;
     Color color = Color.YELLOW;
-    int fuel;
+
+    private int fuel;
     GameText fText;
     double speed = 0.0;
+
     // double angle =
-    int y = 60;
-    int x = 190;
-    Point2D loc = new Point2D(x, y);
+//    int y = 60;
+//    int x = 190;
+    private Point2D loc = new Point2D(190, 60);
     Boolean engineOn;
     ImageView img1;
     HeliBlades blades;
@@ -393,11 +418,22 @@ class Helicopter extends GameObject implements Updatable {
         }
 
     }
+
+    public int getFuel(){
+        return fuel;
+    }
+
+    public Point2D getLoc() {
+        return loc;
+    }
+
+
+
 }
 
 class HeliBlades extends GameObject {
 
-    Rectangle line1, line2;
+    private Rectangle line1, line2;
 
     HeliBlades() {
         alive = true;
@@ -438,7 +474,7 @@ class Game extends Pane {
     Helicopter helicopter;
     Cloud cloud;
     Pond pond;
-    GameText gameOver;
+    GameText gt;
 
     public Game() throws FileNotFoundException {
         helipad = new Helipad();
@@ -457,6 +493,7 @@ class Game extends Pane {
             }
         }
         getChildren().addAll(pond, cloud, helipad, helicopter);
+        setBackground(new Background(new BackgroundFill(Color.TAN, CornerRadii.EMPTY, Insets.EMPTY)));
         setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
     }
@@ -470,12 +507,20 @@ class Game extends Pane {
     }
 
     public void checkGameStatus(){
-        if(helicopter.fuel == 0){
-            gameOver = new GameText("Game Over! \n Press 'R' to restart");
-            gameOver.translate((GAME_WIDTH / 2) - 80, GAME_HEIGHT / 2 + 30);
-            gameOver.changeColor(Color.RED);
+        if(helicopter.getFuel() == 0){
+            helicopter.alive = false;
+            gt = new GameText("Game Over! \n Press 'R' to restart");
+            gt.translate((GAME_WIDTH / 2) - 80, GAME_HEIGHT / 2 + 30);
+            gt.changeColor(Color.RED);
             getChildren().removeAll(pond, cloud, helicopter, helipad);
-            getChildren().add(gameOver);
+            getChildren().add(gt);
+        }
+        if(helicopter.getFuel() > 0 && helicopter.alive && pond.getRadius() >= 100
+                && helicopter.intersects(helipad) && !helicopter.engineOn){
+            gt = new GameText("You won! \n 'R' to continue");
+            gt.translate((GAME_WIDTH / 2) - 120, (GAME_HEIGHT / 2) + 30);
+            gt.changeColor(Color.GREEN);
+            getChildren().add(gt);
         }
     }
 
@@ -498,10 +543,10 @@ public class GameApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws FileNotFoundException {
-        Group root = new Group();
+        //Group root = new Group();
         Game game = new Game();
-        root.getChildren().add(game);
-        Scene scene = new Scene(root, game.GAME_WIDTH, game.GAME_HEIGHT, Color.TAN);
+        //root.getChildren().add(game);
+        Scene scene = new Scene(game, game.GAME_WIDTH, game.GAME_HEIGHT);
         scene.setOnKeyPressed(e -> {
             game.handleKeyPressed(e);
             game.helicopter.handleKeyPress(e);
@@ -534,6 +579,16 @@ public class GameApp extends Application {
                 } catch (FileNotFoundException ex) {
                     throw new RuntimeException(ex);
                 }
+            }
+            if(e.getCode() == KeyCode.B){
+                game.helipad.update();
+            }
+            if (e.getCode() == KeyCode.C){
+                System.out.println("Fuel: " + game.helicopter.getFuel());
+                System.out.println("Alive: " + game.helicopter.alive);
+                System.out.println("Radius: " + game.pond.getRadius());
+                System.out.println("Intersecting: " + game.helicopter.intersects(game.helipad));
+                System.out.println("Engine: " + game.helicopter.engineOn);
             }
         });
 
