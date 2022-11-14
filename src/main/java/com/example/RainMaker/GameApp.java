@@ -33,6 +33,7 @@ import java.security.Key;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 interface Updatable {
     void update();
@@ -191,7 +192,7 @@ class Pond extends GameObject implements Updatable {
 
     public void makeRain(int sat){
         if (radius < 100){
-            radius = radius + (sat * 0.01);
+            radius = radius + (sat * 0.001);
             ellipse.setRadiusX(radius);
             ellipse.setRadiusY(radius);
             percent.setText((int)radius);
@@ -219,7 +220,6 @@ class Cloud extends GameObject implements Updatable {
     int rgbColor = 255;
     double saturation = 0;
     Boolean isRaining = false;
-    Boolean isSeeding = false;
 
     Cloud() {
         alive = true;
@@ -254,10 +254,10 @@ class Cloud extends GameObject implements Updatable {
         if(seeding == false){
             if (saturation > 0){
                 if (rgbColor < 255){
-                    rgbColor += 1;
+                    rgbColor += 0.04;
                 }
                 ellipse.setFill(Color.rgb(rgbColor,rgbColor,rgbColor));
-                saturation -= 0.6;
+                saturation -= 0.04;
                 percent.setText((int) saturation);
                 if (saturation < 30){
                     isRaining = false;
@@ -329,9 +329,6 @@ class Helicopter extends GameObject implements Updatable {
     GameText fText;
     double speed = 0.0;
 
-    // double angle =
-//    int y = 60;
-//    int x = 190;
     private Point2D loc = new Point2D(190, 60);
     Boolean engineOn;
     ImageView img1;
@@ -459,6 +456,22 @@ class HeliBlades extends GameObject {
 }
 
 
+class BackGroundImage extends GameObject {
+
+    BackGroundImage() throws FileNotFoundException {
+        FileInputStream file = new FileInputStream("images/bg.png");
+        Image img = new Image(file);
+        ImageView map = new ImageView(img);
+        setScaleY(-1);
+        add(map);
+    }
+
+    @Override
+    Shape getShapeBounds() {
+        return null;
+    }
+}
+
 class Game extends Pane {
 
     static final int GAME_WIDTH = 600;
@@ -473,10 +486,14 @@ class Game extends Pane {
     Helipad helipad;
     Helicopter helicopter;
     Cloud cloud;
+    //Pond pond;
     Pond pond;
     GameText gt;
+    BackGroundImage bg;
+
 
     public Game() throws FileNotFoundException {
+        bg = new BackGroundImage();
         helipad = new Helipad();
         cloud = new Cloud();
         helicopter = new Helicopter();
@@ -487,12 +504,7 @@ class Game extends Pane {
 //        bg.setFitWidth(GAME_WIDTH);
 //        bg.setFitHeight(GAME_HEIGHT);
 //        bg.setTranslateY(GAME_HEIGHT - GAME_HEIGHT);
-        if (pond.resultW > cloud.resultW && pond.resultW < cloud.resultW + cloud.ellipse.getRadiusX()) {
-            if (pond.result < cloud.result && pond.result > cloud.result + cloud.ellipse.getRadiusY()) {
-                pond.update();
-            }
-        }
-        getChildren().addAll(pond, cloud, helipad, helicopter);
+        getChildren().addAll(pond, bg, cloud, helipad, helicopter);
         setBackground(new Background(new BackgroundFill(Color.TAN, CornerRadii.EMPTY, Insets.EMPTY)));
         setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
@@ -512,40 +524,37 @@ class Game extends Pane {
             gt = new GameText("Game Over! \n Press 'R' to restart");
             gt.translate((GAME_WIDTH / 2) - 80, GAME_HEIGHT / 2 + 30);
             gt.changeColor(Color.RED);
-            getChildren().removeAll(pond, cloud, helicopter, helipad);
+            getChildren().removeAll( cloud, helicopter, helipad);
             getChildren().add(gt);
         }
-        if(helicopter.getFuel() > 0 && helicopter.alive && pond.getRadius() >= 100
-                && helicopter.intersects(helipad) && !helicopter.engineOn){
+        if(helicopter.getFuel() > 0 && helicopter.alive && pond.getRadius() >= 100 &&
+                helicopter.intersects(helipad) && !helicopter.engineOn){
             gt = new GameText("You won! \n 'R' to continue");
             gt.translate((GAME_WIDTH / 2) - 120, (GAME_HEIGHT / 2) + 30);
             gt.changeColor(Color.GREEN);
             getChildren().add(gt);
         }
+        
     }
 
     public void init() throws FileNotFoundException {
-        //getChildren().remove(gameOver);
-        getChildren().removeAll(pond, cloud, helicopter, helipad);
+        getChildren().removeAll(gt, pond, cloud, helicopter, helipad);
         helipad = new Helipad();
         helicopter = new Helicopter();
         cloud = new Cloud();
         pond = new Pond();
-        getChildren().addAll(pond, cloud, helipad, helicopter);
+        gt = new GameText("");
+        getChildren().addAll(gt, pond, cloud, helipad, helicopter);
     }
 
 }
 
 public class GameApp extends Application {
 
-    // private static final int GAME_WIDTH = 400;
-    // private static final int GAME_HEIGHT = 800;
 
     @Override
     public void start(Stage primaryStage) throws FileNotFoundException {
-        //Group root = new Group();
         Game game = new Game();
-        //root.getChildren().add(game);
         Scene scene = new Scene(game, game.GAME_WIDTH, game.GAME_HEIGHT);
         scene.setOnKeyPressed(e -> {
             game.handleKeyPressed(e);
@@ -556,13 +565,10 @@ public class GameApp extends Application {
                 }
 
             }
-            if(game.key(KeyCode.SPACE) == 0){
-                game.cloud.update(false);
-            }
 
-            if(game.cloud.getSaturation() >= 30){
-                game.pond.makeRain((int) game.cloud.getSaturation());
-            }
+//            if(game.cloud.getSaturation() >= 30){
+//                game.pond.makeRain((int) game.cloud.getSaturation());
+//            }
 
             if(e.getCode() == KeyCode.I){
                 game.helicopter.startEngine();
@@ -583,13 +589,6 @@ public class GameApp extends Application {
             if(e.getCode() == KeyCode.B){
                 game.helipad.update();
             }
-            if (e.getCode() == KeyCode.C){
-                System.out.println("Fuel: " + game.helicopter.getFuel());
-                System.out.println("Alive: " + game.helicopter.alive);
-                System.out.println("Radius: " + game.pond.getRadius());
-                System.out.println("Intersecting: " + game.helicopter.intersects(game.helipad));
-                System.out.println("Engine: " + game.helicopter.engineOn);
-            }
         });
 
         scene.setOnKeyReleased(e -> {
@@ -603,10 +602,18 @@ public class GameApp extends Application {
         primaryStage.show();
 
         AnimationTimer gameLoop = new AnimationTimer() {
+
+
             @Override
             public void handle(long now) {
                 if(game.helicopter.engineOn){
                     game.helicopter.update();
+                }
+                if(game.cloud.getSaturation() >= 30){
+                    game.pond.makeRain((int) game.cloud.getSaturation());
+                }
+                if(game.key(KeyCode.SPACE) == 0){
+                    game.cloud.update(false);
                 }
                 game.checkGameStatus();
             }
