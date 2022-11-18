@@ -490,6 +490,7 @@ class Game extends Pane {
     Pond pond;
     GameText gt;
     BackGroundImage bg;
+    Boolean gameOver = false;
 
 
     public Game() throws FileNotFoundException {
@@ -498,15 +499,8 @@ class Game extends Pane {
         cloud = new Cloud();
         helicopter = new Helicopter();
         pond = new Pond();
-//        FileInputStream file = new FileInputStream("images/background.jpeg");
-//        Image img = new Image(file);
-//        ImageView bg = new ImageView(img);
-//        bg.setFitWidth(GAME_WIDTH);
-//        bg.setFitHeight(GAME_HEIGHT);
-//        bg.setTranslateY(GAME_HEIGHT - GAME_HEIGHT);
-        getChildren().addAll(pond, bg, cloud, helipad, helicopter);
-        setBackground(new Background(new BackgroundFill(Color.TAN, CornerRadii.EMPTY, Insets.EMPTY)));
-        setPrefSize(GAME_WIDTH, GAME_HEIGHT);
+        getChildren().addAll(bg, pond, cloud, helipad, helicopter);
+        //setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
     }
 
@@ -538,7 +532,7 @@ class Game extends Pane {
     }
 
     public void init() throws FileNotFoundException {
-        getChildren().removeAll(gt, pond, cloud, helicopter, helipad);
+        getChildren().removeAll( pond, cloud, helicopter, helipad, gt);
         helipad = new Helipad();
         helicopter = new Helicopter();
         cloud = new Cloud();
