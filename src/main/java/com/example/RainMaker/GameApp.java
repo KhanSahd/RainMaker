@@ -12,10 +12,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
@@ -311,9 +308,8 @@ class Helipad extends GameObject {
         rct.setTranslateY(-7);
         shapeBound = new Rectangle(rct.getWidth() + 10, rct.getHeight() + 10);
         shapeBound.setStroke(Color.YELLOW);
+        shapeBound.setFill(Color.rgb(255, 255, 255, 0.1));
         shapeBound.setStrokeWidth(3);
-        shapeBound.setFill(Color.SILVER);
-        //shapeBound.setStroke(Color.YELLOW);
         shapeBound.setTranslateX(-12);
         shapeBound.setTranslateY(-12);
 
@@ -487,7 +483,7 @@ class BackGroundImage extends GameObject {
         FileInputStream file = new FileInputStream("images/bg.png");
         Image img = new Image(file);
         ImageView map = new ImageView(img);
-        //setScaleY(-1);
+        setScaleY(-1);
         add(map);
     }
 
@@ -502,7 +498,7 @@ class Game extends Pane {
     static final int GAME_WIDTH = 600;
     static final int GAME_HEIGHT = 800;
 
-    static final int WIND_SPEED = 1;
+    static final double WIND_SPEED = .3;
 
     static final int WIND_DIRECTION = 45;
 
@@ -677,7 +673,6 @@ public class GameApp extends Application {
                 game.clouds[3].update();
                 game.checkGameStatus();
                 game.helipad.update();
-                System.out.println(game.clouds[0].result);
             }
         };
 
