@@ -163,7 +163,7 @@ class Pond extends GameObject implements Updatable {
         r = new Random();
         high = 800 - (int) ellipse.getRadiusY();
         lowW = (int) ellipse.getRadiusX();
-        highW = 400 - (int) ellipse.getRadiusX();
+        highW = Game.GAME_WIDTH - (int) ellipse.getRadiusX();
         result = r.nextInt(high - low) + low;
         resultW = r.nextInt(highW - lowW) + lowW;
         ellipse.setFill(Color.BLUE);
@@ -206,6 +206,7 @@ class Pond extends GameObject implements Updatable {
 
 }
 
+
 class Cloud extends GameObject implements Updatable {
 
     Ellipse ellipse;
@@ -239,7 +240,18 @@ class Cloud extends GameObject implements Updatable {
 
     }
 
-    public void update(Boolean seeding) {
+    public void update() {
+        resultW += 1;
+        result += 1;
+        translate(resultW, result);
+        if (result >= Game.GAME_HEIGHT){
+            result = Game.GAME_HEIGHT - Game.GAME_HEIGHT ;
+            resultW = Game.GAME_WIDTH - Game.GAME_HEIGHT;
+        }
+    }
+
+
+    public void seed(Boolean seeding){
         if(seeding == true){
             if (saturation < 100) {
                 rgbColor -= 1;
@@ -283,12 +295,11 @@ class Cloud extends GameObject implements Updatable {
 class Helipad extends GameObject {
 
     Rectangle shapeBound;
-    Boolean isShowing;
+    Boolean isShowing = false;
 
 
     Helipad() throws FileNotFoundException {
         alive = true;
-        isShowing = false;
         FileInputStream file = new FileInputStream("images/helipad.png");
         Image img = new Image(file);
         ImageView helipad = new ImageView(img);
@@ -298,20 +309,33 @@ class Helipad extends GameObject {
         Rectangle rct = new Rectangle(helipad.getFitWidth() + 15, helipad.getFitWidth() + 15, Color.WHITE);
         rct.setTranslateX(-7);
         rct.setTranslateY(-7);
-        shapeBound = new Rectangle(rct.getWidth() + 5, rct.getHeight() + 5);
-        shapeBound.setFill(Color.TAN);
+        shapeBound = new Rectangle(rct.getWidth() + 10, rct.getHeight() + 10);
+        shapeBound.setStroke(Color.YELLOW);
+        shapeBound.setStrokeWidth(3);
+        shapeBound.setFill(Color.SILVER);
         //shapeBound.setStroke(Color.YELLOW);
-        shapeBound.setTranslateX(-9);
-        shapeBound.setTranslateY(-9);
+        shapeBound.setTranslateX(-12);
+        shapeBound.setTranslateY(-12);
+
+        shapeBound.setVisible(false);
         add(shapeBound);
         add(rct);
         add(helipad);
         translate(150, 30);
     }
 
+    public void update(){
+        if(isShowing == false){
+            shapeBound.setVisible(false);
+        }
+        if(isShowing == true){
+            shapeBound.setVisible(true);
+        }
+    }
 
-
-
+    public void toggle(){
+        isShowing = !isShowing;
+    }
 
     @Override
     Shape getShapeBounds() {
@@ -453,6 +477,7 @@ class HeliBlades extends GameObject {
     Shape getShapeBounds() {
         return line1;
     }
+
 }
 
 
@@ -462,7 +487,7 @@ class BackGroundImage extends GameObject {
         FileInputStream file = new FileInputStream("images/bg.png");
         Image img = new Image(file);
         ImageView map = new ImageView(img);
-        setScaleY(-1);
+        //setScaleY(-1);
         add(map);
     }
 
@@ -476,6 +501,10 @@ class Game extends Pane {
 
     static final int GAME_WIDTH = 600;
     static final int GAME_HEIGHT = 800;
+
+    static final int WIND_SPEED = 1;
+
+    static final int WIND_DIRECTION = 45;
 
     Set<KeyCode> keysDown = new HashSet<>();
 
@@ -492,6 +521,9 @@ class Game extends Pane {
     BackGroundImage bg;
     Boolean gameOver = false;
 
+    Pond[] ponds = new Pond[]{new Pond(),new Pond(), new Pond()};
+    Cloud[] clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
+
 
     public Game() throws FileNotFoundException {
         bg = new BackGroundImage();
@@ -499,7 +531,8 @@ class Game extends Pane {
         cloud = new Cloud();
         helicopter = new Helicopter();
         pond = new Pond();
-        getChildren().addAll(bg, pond, cloud, helipad, helicopter);
+        //ponds = new Pond[]{new Pond(), new Pond(), new Pond()};
+        getChildren().addAll(bg, ponds[0], ponds[1], ponds[2] , clouds[0], clouds[1], clouds[2], clouds[3], helipad, helicopter);
         //setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
     }
@@ -532,14 +565,17 @@ class Game extends Pane {
     }
 
     public void init() throws FileNotFoundException {
-        getChildren().removeAll( pond, cloud, helicopter, helipad, gt);
+        getChildren().removeAll( pond, ponds[0], ponds[1], ponds[2], clouds[0], clouds[1], clouds[2], clouds[3], cloud, helicopter, helipad, gt);
         helipad = new Helipad();
         helicopter = new Helicopter();
         cloud = new Cloud();
-        pond = new Pond();
+        //pond = new Pond();
+        ponds = new Pond[]{new Pond(),new Pond(), new Pond()};
+        clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
         gt = new GameText("");
-        getChildren().addAll(gt, pond, cloud, helipad, helicopter);
+        getChildren().addAll(gt, ponds[0], ponds[1], ponds[2], clouds[0], clouds[1], clouds[2], clouds[3], helipad, helicopter);
     }
+
 
 }
 
@@ -549,13 +585,37 @@ public class GameApp extends Application {
     @Override
     public void start(Stage primaryStage) throws FileNotFoundException {
         Game game = new Game();
-        Scene scene = new Scene(game, game.GAME_WIDTH, game.GAME_HEIGHT);
+        Scene scene = new Scene(game, game.GAME_WIDTH, game.GAME_HEIGHT, Color.TAN);
         scene.setOnKeyPressed(e -> {
             game.handleKeyPressed(e);
             game.helicopter.handleKeyPress(e);
-            if (game.helicopter.intersects(game.cloud)) {
+//            if (game.helicopter.intersects(game.cloud)) {
+//                if (game.key(KeyCode.SPACE) == 1) {
+//                    game.cloud.seed(true);
+//                }
+//
+//            }
+            if (game.clouds[0].intersects(game.helicopter)) {
                 if (game.key(KeyCode.SPACE) == 1) {
-                    game.cloud.update(true);
+                    game.clouds[0].seed(true);
+                }
+
+            }
+            if (game.clouds[1].intersects(game.helicopter)) {
+                if (game.key(KeyCode.SPACE) == 1) {
+                    game.clouds[1].seed(true);
+                }
+
+            }
+            if (game.clouds[2].intersects(game.helicopter)) {
+                if (game.key(KeyCode.SPACE) == 1) {
+                    game.clouds[2].seed(true);
+                }
+
+            }
+            if (game.clouds[3].intersects(game.helicopter)) {
+                if (game.key(KeyCode.SPACE) == 1) {
+                    game.clouds[3].seed(true);
                 }
 
             }
@@ -580,8 +640,8 @@ public class GameApp extends Application {
                     throw new RuntimeException(ex);
                 }
             }
-            if(e.getCode() == KeyCode.B){
-                game.helipad.update();
+            if(e.getCode() == KeyCode.T){
+                game.helipad.toggle();
             }
         });
 
@@ -604,12 +664,20 @@ public class GameApp extends Application {
                     game.helicopter.update();
                 }
                 if(game.cloud.getSaturation() >= 30){
-                    game.pond.makeRain((int) game.cloud.getSaturation());
+                    game.ponds[0].makeRain((int) game.cloud.getSaturation());
+                    game.ponds[1].makeRain((int) game.cloud.getSaturation());
+                    game.ponds[2].makeRain((int) game.cloud.getSaturation());
                 }
                 if(game.key(KeyCode.SPACE) == 0){
-                    game.cloud.update(false);
+                    game.cloud.seed(false);
                 }
+                game.clouds[0].update();
+                game.clouds[1].update();
+                game.clouds[2].update();
+                game.clouds[3].update();
                 game.checkGameStatus();
+                game.helipad.update();
+                System.out.println(game.clouds[0].result);
             }
         };
 
