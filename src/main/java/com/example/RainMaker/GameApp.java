@@ -149,8 +149,9 @@ class Pond extends GameObject implements Updatable {
     int lowW;
     int high;
     int highW;
-    int result;
-    int resultW;
+//    int result;
+//    int resultW;
+    Point2D result;
     double radius;
 
     Pond() {
@@ -161,11 +162,12 @@ class Pond extends GameObject implements Updatable {
         high = 800 - (int) ellipse.getRadiusY();
         lowW = (int) ellipse.getRadiusX();
         highW = Game.GAME_WIDTH - (int) ellipse.getRadiusX();
-        result = r.nextInt(high - low) + low;
-        resultW = r.nextInt(highW - lowW) + lowW;
+        result = new Point2D((r.nextInt(highW - lowW) + lowW), (r.nextInt(high - low) + low) );
+//        result = r.nextInt(high - low) + low;
+//        resultW = r.nextInt(highW - lowW) + lowW;
         ellipse.setFill(Color.BLUE);
         add(ellipse);
-        translate(resultW, result);
+        translate(result.getX(), result.getY());
         percent = new GameText((int) radius, true);
         percent.changeColor(Color.WHITE);
         add(percent);
@@ -173,9 +175,10 @@ class Pond extends GameObject implements Updatable {
     }
 
     public void update() {
-        result = r.nextInt(high - low) + low;
-        resultW = r.nextInt(highW - lowW) + lowW;
-        translate(resultW, result);
+//        result = r.nextInt(high - low) + low;
+//        resultW = r.nextInt(highW - lowW) + lowW;
+        result = new Point2D((r.nextInt(highW - lowW) + lowW), (r.nextInt(high - low) + low));
+        translate(result.getX(), result.getY());
         if (radius < 100){
             radius++;
             ellipse.setRadiusY(radius);
@@ -196,6 +199,10 @@ class Pond extends GameObject implements Updatable {
         }
     }
 
+    public Point2D getLoc(){
+        return result;
+    }
+
     @Override
     Shape getShapeBounds() {
         return ellipse;
@@ -213,11 +220,12 @@ class Cloud extends GameObject implements Updatable {
     int lowW;
     int high;
     int highW;
-    int result;
-    int resultW;
+    double result;
+    double resultW;
     int rgbColor = 255;
     double saturation = 0;
     Boolean isRaining = false;
+    Line distance;
 
     Cloud() {
         alive = true;
@@ -234,17 +242,26 @@ class Cloud extends GameObject implements Updatable {
         percent = new GameText((int)saturation, true);
         add(percent);
         percent.translate(-8, -5);
+//        distance = new Line();
+//        distance.setStroke(Color.RED);
+//        add(distance);
 
     }
 
-    public void update() {
-        resultW += 1;
-        result += 1;
+    public void update(Point2D pondLoc) {
+        resultW += Game.WIND_SPEED;
+        result += Game.WIND_SPEED;
         translate(resultW, result);
         if (result >= Game.GAME_HEIGHT){
             result = Game.GAME_HEIGHT - Game.GAME_HEIGHT ;
             resultW = Game.GAME_WIDTH - Game.GAME_HEIGHT;
         }
+
+//        distance.setStartX(0);
+//        distance.setStartY(0);
+//        distance.setEndX(pondLoc.getX() * 0.5);
+//        distance.setEndY(pondLoc.getY() * 0.5);
+
     }
 
 
@@ -426,12 +443,16 @@ class Helicopter extends GameObject implements Updatable {
 
     public void increaseSpeed(){
         if(engineOn){
-            speed += 0.1;
+            if(speed < 10.1){
+                speed += 0.1;
+            }
         }
     }
     public void decreaseSpeed(){
         if(engineOn){
-            speed -= 0.1;
+            if(speed > -2){
+                speed -= 0.1;
+            }
         }
 
     }
@@ -480,10 +501,10 @@ class HeliBlades extends GameObject {
 class BackGroundImage extends GameObject {
 
     BackGroundImage() throws FileNotFoundException {
-        FileInputStream file = new FileInputStream("images/bg.png");
+        FileInputStream file = new FileInputStream("images/bg2.jpg");
         Image img = new Image(file);
         ImageView map = new ImageView(img);
-        setScaleY(-1);
+        setScaleY(-1.5);
         add(map);
     }
 
@@ -509,16 +530,23 @@ class Game extends Pane {
     }
 
     Helipad helipad;
+
     Helicopter helicopter;
     Cloud cloud;
-    //Pond pond;
+
     Pond pond;
+
     GameText gt;
+
     BackGroundImage bg;
+
     Boolean gameOver = false;
 
     Pond[] ponds = new Pond[]{new Pond(),new Pond(), new Pond()};
+
     Cloud[] clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
+
+    double totalSaturation;
 
 
     public Game() throws FileNotFoundException {
@@ -527,7 +555,6 @@ class Game extends Pane {
         cloud = new Cloud();
         helicopter = new Helicopter();
         pond = new Pond();
-        //ponds = new Pond[]{new Pond(), new Pond(), new Pond()};
         getChildren().addAll(bg, ponds[0], ponds[1], ponds[2] , clouds[0], clouds[1], clouds[2], clouds[3], helipad, helicopter);
         //setPrefSize(GAME_WIDTH, GAME_HEIGHT);
 
@@ -550,26 +577,28 @@ class Game extends Pane {
             getChildren().removeAll( cloud, helicopter, helipad);
             getChildren().add(gt);
         }
-        if(helicopter.getFuel() > 0 && helicopter.alive && pond.getRadius() >= 100 &&
+        if(helicopter.getFuel() > 0 && helicopter.alive && totalSaturation >= 300 * 0.8 &&
                 helicopter.intersects(helipad) && !helicopter.engineOn){
             gt = new GameText("You won! \n 'R' to continue");
-            gt.translate((GAME_WIDTH / 2) - 120, (GAME_HEIGHT / 2) + 30);
-            gt.changeColor(Color.GREEN);
+            gt.translate((GAME_WIDTH / 2) + 120, (GAME_HEIGHT / 2) + 30);
+            gt.changeColor(Color.BLACK);
             getChildren().add(gt);
         }
-        
+        totalSaturation = ponds[0].getRadius() + ponds[1].getRadius() + ponds[2].getRadius();
+
     }
 
     public void init() throws FileNotFoundException {
-        getChildren().removeAll( pond, ponds[0], ponds[1], ponds[2], clouds[0], clouds[1], clouds[2], clouds[3], cloud, helicopter, helipad, gt);
+        getChildren().removeAll( pond, ponds[0], ponds[1], ponds[2], clouds[0], clouds[1],
+                clouds[2], clouds[3], cloud, helicopter, helipad, gt);
         helipad = new Helipad();
         helicopter = new Helicopter();
         cloud = new Cloud();
-        //pond = new Pond();
         ponds = new Pond[]{new Pond(),new Pond(), new Pond()};
         clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
         gt = new GameText("");
-        getChildren().addAll(gt, ponds[0], ponds[1], ponds[2], clouds[0], clouds[1], clouds[2], clouds[3], helipad, helicopter);
+        getChildren().addAll(gt, ponds[0], ponds[1], ponds[2], clouds[0],
+                clouds[1], clouds[2], clouds[3], helipad, helicopter);
     }
 
 
@@ -645,7 +674,7 @@ public class GameApp extends Application {
             game.handleKeyReleased(e);
         });
 
-        primaryStage.setTitle("GAME_WINDOW_TITLE");
+        primaryStage.setTitle("RainMaker");
         primaryStage.setScene(scene);
         game.setScaleY(-1);
         primaryStage.setResizable(false);
@@ -659,20 +688,39 @@ public class GameApp extends Application {
                 if(game.helicopter.engineOn){
                     game.helicopter.update();
                 }
-                if(game.cloud.getSaturation() >= 30){
-                    game.ponds[0].makeRain((int) game.cloud.getSaturation());
-                    game.ponds[1].makeRain((int) game.cloud.getSaturation());
-                    game.ponds[2].makeRain((int) game.cloud.getSaturation());
+                if(game.clouds[0].getSaturation() >= 30){
+                    game.ponds[0].makeRain((int) game.clouds[0].getSaturation());
+                    game.ponds[1].makeRain((int) game.clouds[1].getSaturation());
+                    game.ponds[2].makeRain((int) game.clouds[2].getSaturation());
+                }
+                if(game.clouds[1].getSaturation() >= 30){
+                    game.ponds[0].makeRain((int) game.clouds[0].getSaturation());
+                    game.ponds[1].makeRain((int) game.clouds[1].getSaturation());
+                    game.ponds[2].makeRain((int) game.clouds[2].getSaturation());
+                }
+                if(game.clouds[2].getSaturation() >= 30){
+                    game.ponds[0].makeRain((int) game.clouds[0].getSaturation());
+                    game.ponds[1].makeRain((int) game.clouds[1].getSaturation());
+                    game.ponds[2].makeRain((int) game.clouds[2].getSaturation());
+                }
+                if(game.clouds[3].getSaturation() >= 30){
+                    game.ponds[0].makeRain((int) game.clouds[0].getSaturation());
+                    game.ponds[1].makeRain((int) game.clouds[1].getSaturation());
+                    game.ponds[2].makeRain((int) game.clouds[2].getSaturation());
                 }
                 if(game.key(KeyCode.SPACE) == 0){
-                    game.cloud.seed(false);
+                    game.clouds[0].seed(false);
+                    game.clouds[1].seed(false);
+                    game.clouds[2].seed(false);
+                    game.clouds[3].seed(false);
                 }
-                game.clouds[0].update();
-                game.clouds[1].update();
-                game.clouds[2].update();
-                game.clouds[3].update();
+                game.clouds[0].update(game.ponds[0].getLoc());
+                game.clouds[1].update(game.ponds[1].getLoc());
+                game.clouds[2].update(game.ponds[2].getLoc());
+                game.clouds[3].update(game.ponds[2].getLoc());
                 game.checkGameStatus();
                 game.helipad.update();
+                System.out.println(game.totalSaturation);
             }
         };
 
