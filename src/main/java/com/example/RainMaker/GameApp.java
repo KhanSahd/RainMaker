@@ -65,28 +65,25 @@ public class GameApp extends Application {
 
         AnimationTimer gameLoop = new AnimationTimer() {
             @Override
-            public void handle(long now) {
+            public void handle(long nano) {
+
                 if(game.helicopter.engineOn){
                     game.helicopter.update();
                 }
                 for(Cloud c: game.clouds){
                     if (c.getSaturation() >= 30){
-                        game.ponds[0].makeRain((int) game.clouds[0].getSaturation());
-                        game.ponds[1].makeRain((int) game.clouds[1].getSaturation());
-                        game.ponds[2].makeRain((int) game.clouds[2].getSaturation());
+                        game.ponds[0].makeRain((int) game.clouds.get(0).getSaturation());
+                        game.ponds[1].makeRain((int) game.clouds.get(1).getSaturation());
+                        game.ponds[2].makeRain((int) game.clouds.get(2).getSaturation());
                     }
+                    c.update();
                 }
 
                 if(game.key(KeyCode.SPACE) == 0){
-                    game.clouds[0].seed(false);
-                    game.clouds[1].seed(false);
-                    game.clouds[2].seed(false);
-                    game.clouds[3].seed(false);
+                    game.clouds.forEach((c) -> c.seed(false));
                 }
 
-                for(Cloud c: game.clouds){
-                    c.update();
-                }
+                game.blimp.update();
                 game.checkGameStatus();
                 game.helipad.update();
                 game.updateDistance();

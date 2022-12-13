@@ -24,12 +24,11 @@ class Cloud extends GameObject implements Updatable {
     double saturation = 0;
     Boolean isRaining = false;
 
-    BezierOval bez;
+
 
     Cloud() {
         alive = true;
         ellipse = new Ellipse(60,  60);
-        bez = new BezierOval();
         r = new Random();
         high = Game.GAME_HEIGHT - (int) ellipse.getRadiusY();
         lowW = (int) ellipse.getRadiusX();
@@ -46,14 +45,18 @@ class Cloud extends GameObject implements Updatable {
 
     }
 
+    public void updateClosestPond(Pond p){
+
+    }
+
     public void update() {
         resultW += Game.WIND_SPEED;
         result += Game.WIND_SPEED;
         loc = new Point2D(resultW, result);
         translate(loc.getX(), loc.getY());
-        if (result >= Game.GAME_HEIGHT){
-            resultW = resultW - resultW;
-            result = result - result ;
+        if (result >= Game.GAME_HEIGHT || resultW >= Game.GAME_WIDTH){
+            resultW = -30;
+            result = 0 - (Math.random() * 400);
             loc = new Point2D(resultW, result);
         }
     }

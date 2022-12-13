@@ -6,8 +6,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 class Game extends Pane {
 
@@ -34,22 +33,28 @@ class Game extends Pane {
 
     Pond[] ponds = new Pond[]{new Pond(),new Pond(), new Pond()};
 
-    Cloud[] clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
+    //Cloud[] clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
+    ArrayList<Cloud> clouds = new ArrayList<>(Arrays.asList(new Cloud(), new Cloud(),
+            new Cloud(), new Cloud()));
+
+    Iterator<Cloud> it = clouds.iterator();
+
+    Blimp blimp;
 
 
     Distance[] distances = new Distance[]{
-            new Distance(clouds[0].getLoc(), ponds[0].getLoc()), // index 0
-            new Distance(clouds[0].getLoc(), ponds[1].getLoc()), // index 1
-            new Distance(clouds[0].getLoc(), ponds[2].getLoc()), // index 2
-            new Distance(clouds[1].getLoc(), ponds[0].getLoc()), // index 3
-            new Distance(clouds[1].getLoc(), ponds[1].getLoc()), // index 4
-            new Distance(clouds[1].getLoc(), ponds[2].getLoc()), // index 5
-            new Distance(clouds[2].getLoc(), ponds[0].getLoc()), // index 6
-            new Distance(clouds[2].getLoc(), ponds[1].getLoc()), // index 7
-            new Distance(clouds[2].getLoc(), ponds[2].getLoc()), // index 8
-            new Distance(clouds[3].getLoc(), ponds[0].getLoc()), // index 9
-            new Distance(clouds[3].getLoc(), ponds[1].getLoc()), // index 10
-            new Distance(clouds[3].getLoc(), ponds[2].getLoc())  // index 11
+            new Distance(clouds.get(0).getLoc(), ponds[0].getLoc()), // index 0
+            new Distance(clouds.get(0).getLoc(), ponds[1].getLoc()), // index 1
+            new Distance(clouds.get(0).getLoc(), ponds[2].getLoc()), // index 2
+            new Distance(clouds.get(1).getLoc(), ponds[0].getLoc()), // index 3
+            new Distance(clouds.get(1).getLoc(), ponds[1].getLoc()), // index 4
+            new Distance(clouds.get(1).getLoc(), ponds[2].getLoc()), // index 5
+            new Distance(clouds.get(2).getLoc(), ponds[0].getLoc()), // index 6
+            new Distance(clouds.get(2).getLoc(), ponds[1].getLoc()), // index 7
+            new Distance(clouds.get(2).getLoc(), ponds[2].getLoc()), // index 8
+            new Distance(clouds.get(3).getLoc(), ponds[0].getLoc()), // index 9
+            new Distance(clouds.get(3).getLoc(), ponds[1].getLoc()), // index 10
+            new Distance(clouds.get(3).getLoc(), ponds[2].getLoc())  // index 11
     };
 
     double totalSaturation;
@@ -59,17 +64,18 @@ class Game extends Pane {
         bg = new BackGroundImage();
         helipad = new Helipad();
         helicopter = new Helicopter();
-        getChildren().add(bg);
-        for(Cloud c: clouds){
-            getChildren().add(c);
-        }
+        blimp = new Blimp();
+        getChildren().addAll(bg, blimp, helipad);
         for(Pond p: ponds){
-            getChildren().add(p);
+            getChildren().addAll(p);
+        }
+        for(Cloud c: clouds){
+            getChildren().addAll(c);
         }
         for(Distance d: distances){
-            getChildren().add(d);
+            getChildren().addAll(d);
         }
-        getChildren().addAll(helipad, helicopter);
+        getChildren().add(helicopter);
     }
 
     public void handleKeyPressed(KeyEvent e) {
@@ -92,30 +98,38 @@ class Game extends Pane {
         if(helicopter.getFuel() > 0 && helicopter.alive && totalSaturation >= 300 * 0.8 &&
                 helicopter.intersects(helipad) && !helicopter.engineOn){
             gt = new GameText("You won! \n 'R' to continue");
-            gt.translate((GAME_WIDTH / 2) + 120, (GAME_HEIGHT / 2) + 30);
+            gt.translate((GAME_WIDTH / 2) - 120, (GAME_HEIGHT / 2) - 30);
             gt.changeColor(Color.BLACK);
             getChildren().add(gt);
         }
         totalSaturation = ponds[0].getRadius() + ponds[1].getRadius() + ponds[2].getRadius();
     }
 
-    public void updateDistance(){
-        distances[0].update(clouds[0], ponds[0]);
-        distances[1].update(clouds[0], ponds[1]);
-        distances[2].update(clouds[0], ponds[2]);
-        distances[3].update(clouds[1], ponds[0]);
-        distances[4].update(clouds[1], ponds[1]);
-        distances[5].update(clouds[1], ponds[2]);
-        distances[6].update(clouds[2], ponds[0]);
-        distances[7].update(clouds[2], ponds[1]);
-        distances[8].update(clouds[2], ponds[2]);
-        distances[9].update(clouds[3], ponds[0]);
-        distances[10].update(clouds[3], ponds[1]);
-        distances[11].update(clouds[3], ponds[2]);
+    public void updateClouds(){
+
     }
 
+    public void updateDistance(){
+        distances[0].update(clouds.get(0), ponds[0]);
+        distances[1].update(clouds.get(0), ponds[1]);
+        distances[2].update(clouds.get(0), ponds[2]);
+        distances[3].update(clouds.get(1), ponds[0]);
+        distances[4].update(clouds.get(1), ponds[1]);
+        distances[5].update(clouds.get(1), ponds[2]);
+        distances[6].update(clouds.get(2), ponds[0]);
+        distances[7].update(clouds.get(2), ponds[1]);
+        distances[8].update(clouds.get(2), ponds[2]);
+        distances[9].update(clouds.get(3), ponds[0]);
+        distances[10].update(clouds.get(3), ponds[1]);
+        distances[11].update(clouds.get(3), ponds[2]);
+    }
+
+//    public void regenerate(){
+//        getChildren().add(blimp);
+//    }
+
     public void init() throws FileNotFoundException {
-        getChildren().removeAll(helicopter, helipad, gt);
+        getChildren().removeAll(helicopter, helipad, blimp);
         for(Cloud c: clouds){
             getChildren().remove(c);
         }
@@ -123,37 +137,43 @@ class Game extends Pane {
             getChildren().remove(d);
         }
         for(Pond p: ponds){
-            getChildren().removeAll(p);
+            getChildren().remove(p);
         }
+        getChildren().remove(gt);
+        clouds.clear();
         ponds = new Pond[]{new Pond(),new Pond(), new Pond()};
-        clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
+        //clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
+        clouds = new ArrayList<>(Arrays.asList(new Cloud(), new Cloud(),
+                new Cloud(), new Cloud()));
         helicopter = new Helicopter();
         helipad = new Helipad();
+        blimp = new Blimp();
         distances = new Distance[]{
-                new Distance(clouds[0].getLoc(), ponds[0].getLoc()), // index 0
-                new Distance(clouds[0].getLoc(), ponds[1].getLoc()), // index 1
-                new Distance(clouds[0].getLoc(), ponds[2].getLoc()), // index 2
-                new Distance(clouds[1].getLoc(), ponds[0].getLoc()), // index 3
-                new Distance(clouds[1].getLoc(), ponds[1].getLoc()), // index 4
-                new Distance(clouds[1].getLoc(), ponds[2].getLoc()), // index 5
-                new Distance(clouds[2].getLoc(), ponds[0].getLoc()), // index 6
-                new Distance(clouds[2].getLoc(), ponds[1].getLoc()), // index 7
-                new Distance(clouds[2].getLoc(), ponds[2].getLoc()), // index 8
-                new Distance(clouds[3].getLoc(), ponds[0].getLoc()), // index 9
-                new Distance(clouds[3].getLoc(), ponds[1].getLoc()), // index 10
-                new Distance(clouds[3].getLoc(), ponds[2].getLoc())  // index 11
+                new Distance(clouds.get(0).getLoc(), ponds[0].getLoc()), // index 0
+                new Distance(clouds.get(0).getLoc(), ponds[1].getLoc()), // index 1
+                new Distance(clouds.get(0).getLoc(), ponds[2].getLoc()), // index 2
+                new Distance(clouds.get(1).getLoc(), ponds[0].getLoc()), // index 3
+                new Distance(clouds.get(1).getLoc(), ponds[1].getLoc()), // index 4
+                new Distance(clouds.get(1).getLoc(), ponds[2].getLoc()), // index 5
+                new Distance(clouds.get(2).getLoc(), ponds[0].getLoc()), // index 6
+                new Distance(clouds.get(2).getLoc(), ponds[1].getLoc()), // index 7
+                new Distance(clouds.get(2).getLoc(), ponds[2].getLoc()), // index 8
+                new Distance(clouds.get(3).getLoc(), ponds[0].getLoc()), // index 9
+                new Distance(clouds.get(3).getLoc(), ponds[1].getLoc()), // index 10
+                new Distance(clouds.get(3).getLoc(), ponds[2].getLoc())  // index 11
         };
         gt = new GameText("");
+        getChildren().addAll(blimp, helipad);
+        for(Pond p: ponds){
+            getChildren().add(p);
+        }
         for(Cloud c: clouds){
             getChildren().add(c);
         }
         for(Distance d: distances){
             getChildren().add(d);
         }
-        for(Pond p: ponds){
-            getChildren().add(p);
-        }
-        getChildren().addAll(helipad, helicopter);
+        getChildren().add(helicopter);
     }
 
 
