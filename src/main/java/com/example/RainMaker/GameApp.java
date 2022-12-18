@@ -34,6 +34,7 @@ public class GameApp extends Application {
             }
             if(e.getCode() == KeyCode.UP){
                 game.helicopter.increaseSpeed();
+                System.out.println(game.helicopter.speed);
             }
             if(e.getCode() == KeyCode.DOWN){
                 game.helicopter.decreaseSpeed();
@@ -83,10 +84,13 @@ public class GameApp extends Application {
                     game.clouds.forEach((c) -> c.seed(false));
                 }
 
+                //game.updateClouds();
                 game.blimp.update();
                 game.checkGameStatus();
                 game.helipad.update();
                 game.updateDistance();
+                game.helicopter.playSound();
+
             }
         };
 

@@ -69,9 +69,9 @@ class Game extends Pane {
         for(Pond p: ponds){
             getChildren().addAll(p);
         }
-        for(Cloud c: clouds){
-            getChildren().addAll(c);
-        }
+        clouds.forEach((c) -> {
+            getChildren().add(c);
+        });
         for(Distance d: distances){
             getChildren().addAll(d);
         }
@@ -106,6 +106,14 @@ class Game extends Pane {
     }
 
     public void updateClouds(){
+        while (it.hasNext()){
+            if (it.next().loc.getX() >= GAME_WIDTH || it.next().loc.getY() >= GAME_HEIGHT){
+                it.remove();
+            }
+            if(clouds.size() < 3){
+                clouds.add(new Cloud());
+            }
+        }
 
     }
 
@@ -130,9 +138,9 @@ class Game extends Pane {
 
     public void init() throws FileNotFoundException {
         getChildren().removeAll(helicopter, helipad, blimp);
-        for(Cloud c: clouds){
+        clouds.forEach((c) -> {
             getChildren().remove(c);
-        }
+        });
         for(Distance d: distances){
             getChildren().remove(d);
         }
@@ -145,6 +153,7 @@ class Game extends Pane {
         //clouds = new Cloud[]{new Cloud(), new Cloud(), new Cloud(), new Cloud()};
         clouds = new ArrayList<>(Arrays.asList(new Cloud(), new Cloud(),
                 new Cloud(), new Cloud()));
+        Iterator<Cloud> it = clouds.iterator();
         helicopter = new Helicopter();
         helipad = new Helipad();
         blimp = new Blimp();
@@ -167,9 +176,9 @@ class Game extends Pane {
         for(Pond p: ponds){
             getChildren().add(p);
         }
-        for(Cloud c: clouds){
+        clouds.forEach((c) -> {
             getChildren().add(c);
-        }
+        });
         for(Distance d: distances){
             getChildren().add(d);
         }

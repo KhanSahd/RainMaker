@@ -1,10 +1,13 @@
 package com.example.RainMaker;
 
 import javafx.geometry.Point2D;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Shape;
 
+import java.io.File;
 import java.util.Random;
 
 class Pond extends GameObject implements Updatable {
@@ -18,6 +21,9 @@ class Pond extends GameObject implements Updatable {
     int highW;
     Point2D result;
     double radius;
+
+    Media sound;
+    MediaPlayer mediaPlayer;
 
     Pond() {
         alive = true;
@@ -35,6 +41,11 @@ class Pond extends GameObject implements Updatable {
         percent.changeColor(Color.WHITE);
         add(percent);
         percent.translate(-8, -5);
+
+        /* Setting up sound */
+        sound = new Media(new File("sounds/rain.mp3").toURI().toString());
+        mediaPlayer = new MediaPlayer(sound);
+
     }
 
     public void update() {
@@ -58,6 +69,7 @@ class Pond extends GameObject implements Updatable {
             ellipse.setRadiusY(radius);
             percent.setText((int)radius);
         }
+        mediaPlayer.play();
     }
 
     public Point2D getLoc(){

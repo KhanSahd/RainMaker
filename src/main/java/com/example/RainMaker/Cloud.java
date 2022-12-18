@@ -1,10 +1,13 @@
 package com.example.RainMaker;
 
 import javafx.geometry.Point2D;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Shape;
 
+import java.io.File;
 import java.util.Random;
 
 class Cloud extends GameObject implements Updatable {
@@ -23,6 +26,10 @@ class Cloud extends GameObject implements Updatable {
     int rgbColor = 255;
     double saturation = 0;
     Boolean isRaining = false;
+    BezierOval bez;
+
+    Media sound;
+    MediaPlayer mediaPlayer;
 
 
 
@@ -37,11 +44,17 @@ class Cloud extends GameObject implements Updatable {
         resultW = r.nextInt(highW - lowW) + lowW;
         loc = new Point2D(resultW, result );
         ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
+        bez = new BezierOval(ellipse);
+        add(bez);
         add(ellipse);
         translate(loc.getX(), loc.getY());
         percent = new GameText((int)saturation, true);
         add(percent);
         percent.translate(-8, -5);
+
+        /* Setting up sound */
+        sound = new Media(new File("sounds/thunder.mp3").toURI().toString());
+        mediaPlayer = new MediaPlayer(sound);
 
     }
 
@@ -73,6 +86,7 @@ class Cloud extends GameObject implements Updatable {
                 percent.setText((int)saturation);
                 if (saturation == 30) {
                     isRaining = true;
+                    mediaPlayer.play();
                 }
             }
         }
@@ -86,6 +100,7 @@ class Cloud extends GameObject implements Updatable {
                 percent.setText((int) saturation);
                 if (saturation < 30){
                     isRaining = false;
+                    mediaPlayer.stop();
                 }
             }
         }

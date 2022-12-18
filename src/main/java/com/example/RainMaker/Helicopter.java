@@ -9,6 +9,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Shape;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import java.io.File;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,6 +30,9 @@ class Helicopter extends GameObject implements Updatable {
     Boolean engineOn;
     ImageView img1;
     HeliBlades blades;
+    Boolean off, starting, ready, stopping;
+    Media sound;
+    MediaPlayer mediaPlayer;
 
     Helicopter() throws FileNotFoundException {
         alive = true;
@@ -59,6 +65,10 @@ class Helicopter extends GameObject implements Updatable {
         fText.changeColor(Color.BLACK);
         translate(loc.getX(), loc.getY());
 
+        /* Setting up sound */
+        sound = new Media(new File("sounds/helicopter.mp3").toURI().toString());
+        mediaPlayer = new MediaPlayer(sound);
+
     }
 
     @Override
@@ -80,6 +90,15 @@ class Helicopter extends GameObject implements Updatable {
         }
 
     }
+
+    public void playSound(){
+        if(engineOn){
+            mediaPlayer.play();
+        } else {
+            mediaPlayer.stop();
+        }
+    }
+
 
     public void handleKeyPress(KeyEvent evt) {
         if (evt.getCode() == KeyCode.RIGHT) {
