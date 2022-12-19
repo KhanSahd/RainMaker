@@ -18,56 +18,72 @@ import java.io.FileNotFoundException;
 
 class Helicopter extends GameObject implements Updatable {
 
-    Ellipse e;
-    Line l;
-    Color color = Color.YELLOW;
+
+    private Ellipse e;
+    private Line l;
+    private Color color = Color.YELLOW;
 
     private int fuel;
-    GameText fText;
-    double speed = 0.0;
+    private GameText fText;
+    private double speed = 0.0;
 
     private Point2D loc = new Point2D(190, 60);
-    Boolean engineOn;
-    ImageView img1;
-    HeliBlades blades;
-    Boolean off, starting, ready, stopping;
-    Media sound;
-    MediaPlayer mediaPlayer;
+    private Boolean engineOn;
+    private ImageView img1;
+    private HeliBlades blades;
+    private Boolean off, starting, ready, stopping;
+    private Media sound;
+    private MediaPlayer mediaPlayer;
+
+    boolean losingFuel;
 
     Helicopter() throws FileNotFoundException {
-        alive = true;
-        engineOn = false;
-        e = new Ellipse(10, 10);
-        l = new Line(0, 0, 0, 25);
-        fuel = 25000;
-        /* HELICOPTER */
-        FileInputStream file = new FileInputStream("images/helicopter.png");
-        Image heli = new Image(file);
-        img1 = new ImageView(heli);
-        img1.setFitWidth(80);
-        img1.setPreserveRatio(true);
-        img1.setRotate(180);
-        img1.setTranslateX(-40);
-        img1.setTranslateY(-35);
 
-        /* PROPELLERS  */
-        blades = new HeliBlades();
-        /* END OF PROPELLERS */
+        /* INSTANTIATING OBJECTS */
+            alive = true;
+            engineOn = false;
+            losingFuel = false;
+            e = new Ellipse(10, 10);
+            l = new Line(0, 0, 0, 25);
+            fuel = 25000;
 
-        fText = new GameText(fuel, false);
-        e.setFill(color);
-        l.setStroke(color);
-        add(l);
-        add(img1);
-        add(blades);
-        add(fText);
-        fText.translate(-25, -45);
-        fText.changeColor(Color.BLACK);
-        translate(loc.getX(), loc.getY());
+            /* HELICOPTER */
+                FileInputStream file = new FileInputStream("images/helicopter.png");
+                Image heli = new Image(file);
+                img1 = new ImageView(heli);
+                img1.setFitWidth(80);
+                img1.setPreserveRatio(true);
+                img1.setRotate(180);
+                img1.setTranslateX(-40);
+                img1.setTranslateY(-35);
+            /* END OF HELICOPTER */
+
+            /* PROPELLERS  */
+                blades = new HeliBlades();
+            /* END OF PROPELLERS */
+
+            fText = new GameText(fuel, false);
+            e.setFill(color);
+            l.setStroke(color);
+        /* END OF INSTANTIATION */
+
+        /* ADDING TO GROUP */
+            add(l);
+            add(img1);
+            add(blades);
+            add(fText);
+        /* END OF ADDING TO GROUP */
+        /* TRANSLATION */
+            fText.translate(-25, -45);
+            fText.changeColor(Color.BLACK);
+            translate(loc.getX(), loc.getY());
+        /* END OF TRANSLATION */
 
         /* Setting up sound */
         sound = new Media(new File("sounds/helicopter.mp3").toURI().toString());
         mediaPlayer = new MediaPlayer(sound);
+        mediaPlayer.setVolume(0.2);
+        /* END OF SOUND */
 
     }
 
@@ -80,7 +96,7 @@ class Helicopter extends GameObject implements Updatable {
         loc = loc.add(speed * Math.sin(-1*Math.PI*getMyRotation()/180), speed *
                 Math.cos(-1*Math.PI*getMyRotation()/180));
         translate(loc.getX(), loc.getY());
-        if(fuel > 0){
+        if(fuel > 0 && losingFuel){
             fuel -= 5;
             fText.setText(fuel);
         }
@@ -113,6 +129,7 @@ class Helicopter extends GameObject implements Updatable {
     public void startEngine() {
         if(speed < 0.1 && speed > -0.01){
             engineOn = !engineOn;
+            losingFuel = true;
         }
     }
 
@@ -129,17 +146,76 @@ class Helicopter extends GameObject implements Updatable {
                 speed -= 0.1;
             }
         }
-
     }
 
     public int getFuel(){
         return fuel;
     }
 
+    public void reFuel(int f){
+        fuel += f * 0.02;
+    }
+
     public Point2D getLoc() {
         return loc;
     }
 
+    /* GETTERS */
+    public Ellipse getE() {
+        return e;
+    }
+
+    public Line getL() {
+        return l;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public GameText getfText() {
+        return fText;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public Boolean getEngineOn() {
+        return engineOn;
+    }
+
+    public ImageView getImg1() {
+        return img1;
+    }
+
+    public HeliBlades getBlades() {
+        return blades;
+    }
+
+    public Boolean getOff() {
+        return off;
+    }
+
+    public Boolean getStarting() {
+        return starting;
+    }
+
+    public Boolean getReady() {
+        return ready;
+    }
+
+    public Boolean getStopping() {
+        return stopping;
+    }
+
+    public Media getSound() {
+        return sound;
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
+    }
 
 
 }

@@ -12,18 +12,18 @@ import java.util.Random;
 
 class Pond extends GameObject implements Updatable {
 
-    Ellipse ellipse;
-    GameText percent;
-    Random r;
-    int low = 800 / 3;
-    int lowW;
-    int high;
-    int highW;
-    Point2D result;
-    double radius;
+    private Ellipse ellipse;
+    private GameText percent;
+    private Random r;
+    private int low = 800 / 3;
+    private int lowW;
+    private int high;
+    private int highW;
+    private Point2D result;
+    private double radius;
 
-    Media sound;
-    MediaPlayer mediaPlayer;
+    private Media sound;
+    private MediaPlayer mediaPlayer;
 
     Pond() {
         alive = true;
@@ -81,4 +81,45 @@ class Pond extends GameObject implements Updatable {
         return ellipse;
     }
 
+    /* GETTERS */
+
+    public Ellipse getEllipse() {
+        return ellipse;
+    }
+
+    public GameText getPercent() {
+        return percent;
+    }
+
+    public Random getR() {
+        return r;
+    }
+
+    public int getLow() {
+        return low;
+    }
+
+    public int getLowW() {
+        return lowW;
+    }
+
+    public int getHigh() {
+        return high;
+    }
+
+    public int getHighW() {
+        return highW;
+    }
+
+    public Point2D getResult() {
+        return result;
+    }
+
+    public Media getSound() {
+        return sound;
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
+    }
 }

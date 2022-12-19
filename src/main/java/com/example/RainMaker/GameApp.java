@@ -20,24 +20,23 @@ public class GameApp extends Application {
         Scene scene = new Scene(game, GAME_WIDTH, GAME_HEIGHT);
         scene.setOnKeyPressed(e -> {
             game.handleKeyPressed(e);
-            game.helicopter.handleKeyPress(e);
-            for(Cloud c: game.clouds){
-                if(c.intersects(game.helicopter)){
-                    if(game.key(KeyCode.SPACE) == 1){
+            game.getHelicopter().handleKeyPress(e);
+            for(Cloud c: game.getClouds()){
+                if(c.intersects(game.getHelicopter())){
+                    if(game.key() == 1){
                         c.seed(true);
                     }
                 }
             }
 
             if(e.getCode() == KeyCode.I){
-                game.helicopter.startEngine();
+                game.getHelicopter().startEngine();
             }
             if(e.getCode() == KeyCode.UP){
-                game.helicopter.increaseSpeed();
-                System.out.println(game.helicopter.speed);
+                game.getHelicopter().increaseSpeed();
             }
             if(e.getCode() == KeyCode.DOWN){
-                game.helicopter.decreaseSpeed();
+                game.getHelicopter().decreaseSpeed();
             }
             if(e.getCode() == KeyCode.R){
                 try {
@@ -47,10 +46,10 @@ public class GameApp extends Application {
                 }
             }
             if(e.getCode() == KeyCode.T){
-                game.helipad.toggle();
+                game.getHelipad().toggle();
             }
             if(e.getCode() == KeyCode.D){
-                for(Distance d: game.distances){
+                for(Distance d: game.getDistances()){
                     d.toggle();
                 }
             }
@@ -65,32 +64,59 @@ public class GameApp extends Application {
         primaryStage.show();
 
         AnimationTimer gameLoop = new AnimationTimer() {
+            double old = -1;
+            double elapsedTime = 0;
             @Override
             public void handle(long nano) {
 
-                if(game.helicopter.engineOn){
-                    game.helicopter.update();
+                /* Getting seconds */
+                    if(old < 0) {
+                        old = nano;
+                    }
+                    double delta = (nano - old) / 1e9;
+                    old = nano;
+                    elapsedTime += delta;
+                /* End of seconds */
+
+                if(game.getHelicopter().getEngineOn()){
+                    game.getHelicopter().update();
                 }
-                for(Cloud c: game.clouds){
+                for(Cloud c: game.getClouds()){
                     if (c.getSaturation() >= 30){
-                        game.ponds[0].makeRain((int) game.clouds.get(0).getSaturation());
-                        game.ponds[1].makeRain((int) game.clouds.get(1).getSaturation());
-                        game.ponds[2].makeRain((int) game.clouds.get(2).getSaturation());
+                        game.getPonds()[0].makeRain((int) c.getSaturation());
+                        game.getPonds()[1].makeRain((int) c.getSaturation());
+                        game.getPonds()[2].makeRain((int) c.getSaturation());
                     }
                     c.update();
                 }
 
-                if(game.key(KeyCode.SPACE) == 0){
-                    game.clouds.forEach((c) -> c.seed(false));
+                if(game.key() == 0){
+                    game.getClouds().forEach((c) -> c.seed(false));
                 }
 
-                //game.updateClouds();
-                game.blimp.update();
-                game.checkGameStatus();
-                game.helipad.update();
-                game.updateDistance();
-                game.helicopter.playSound();
+                if(game.getHelicopter().intersects(game.getBlimp())){
+                    game.getBlimp().fuelHelicopter();
+                    game.getHelicopter().reFuel(game.getBlimp().getFuel());
+                }
+                game.getBlimp().update();
+                game.generateClouds();
+                game.getClouds().removeIf(e -> !e.alive);
+                if((int)elapsedTime > 5){
+                    game.getBlimp().setInView();
+                }
+                if(game.getBlimp().getTranslateX() > game.GAME_WIDTH){
+                    game.getBlimp().setExited();
+                }
+                if(game.getClouds().size() < game.getCloudCounter()){
+                    game.getClouds().add(new Cloud());
+                    game.getCloudCont().getChildren().add(game.getClouds().get(game.getClouds().size() - 1));
+                }
 
+                game.checkGameStatus();
+                game.getHelipad().update();
+                game.updateDistance();
+                game.getHelicopter().playSound();
+                game.getMediaPlayer().play();
             }
         };
 

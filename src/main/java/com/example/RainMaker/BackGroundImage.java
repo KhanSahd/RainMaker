@@ -10,11 +10,11 @@ import java.io.FileNotFoundException;
 class BackGroundImage extends GameObject {
 
     BackGroundImage() throws FileNotFoundException {
-        FileInputStream file = new FileInputStream("images/bg2.jpg");
+        FileInputStream file = new FileInputStream("images/mainbg.png");
         Image img = new Image(file);
         ImageView map = new ImageView(img);
-        setScaleY(-1.5);
-        setScaleX(1.5);
+        setScaleY(-1);
+        //setScaleX(1);
         add(map);
     }
 

@@ -12,30 +12,34 @@ import java.util.Random;
 
 class Cloud extends GameObject implements Updatable {
 
-    Ellipse ellipse;
-    GameText percent;
-    Random r;
-    int low = 800 / 3;
-    int lowW;
-    int high;
-    int highW;
-    double result;
-    double resultW;
+    private Ellipse ellipse;
+    private GameText percent;
+    private Random r, r2;
+    private int low = 800 / 3;
+    private int lowW;
+    private int high;
+    private int highW;
+    private double result;
+    private double resultW;
 
-    Point2D loc;
-    int rgbColor = 255;
-    double saturation = 0;
-    Boolean isRaining = false;
-    BezierOval bez;
+    private Point2D loc;
+    private int rgbColor = 255;
+    private double saturation = 0;
+    private Boolean isRaining = false;
+    private BezierOval bez;
 
-    Media sound;
-    MediaPlayer mediaPlayer;
+    private Media sound;
+    private MediaPlayer mediaPlayer;
 
 
 
     Cloud() {
         alive = true;
-        ellipse = new Ellipse(60,  60);
+        r2 = new Random();
+        double radiusX = r2.nextInt(15, 60) + 15;
+        double radiusY = r2.nextInt(15, 60) + 15;
+
+        ellipse = new Ellipse(radiusX,  radiusY);
         r = new Random();
         high = Game.GAME_HEIGHT - (int) ellipse.getRadiusY();
         lowW = (int) ellipse.getRadiusX();
@@ -44,9 +48,9 @@ class Cloud extends GameObject implements Updatable {
         resultW = r.nextInt(highW - lowW) + lowW;
         loc = new Point2D(resultW, result );
         ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
-        bez = new BezierOval(ellipse);
-        add(bez);
+        bez = new BezierOval(radiusX, radiusY);
         add(ellipse);
+        add(bez);
         translate(loc.getX(), loc.getY());
         percent = new GameText((int)saturation, true);
         add(percent);
@@ -58,20 +62,12 @@ class Cloud extends GameObject implements Updatable {
 
     }
 
-    public void updateClosestPond(Pond p){
-
-    }
 
     public void update() {
         resultW += Game.WIND_SPEED;
         result += Game.WIND_SPEED;
         loc = new Point2D(resultW, result);
         translate(loc.getX(), loc.getY());
-        if (result >= Game.GAME_HEIGHT || resultW >= Game.GAME_WIDTH){
-            resultW = -30;
-            result = 0 - (Math.random() * 400);
-            loc = new Point2D(resultW, result);
-        }
     }
 
 
@@ -82,6 +78,7 @@ class Cloud extends GameObject implements Updatable {
             if (saturation < 100) {
                 rgbColor -= 1;
                 ellipse.setFill(Color.rgb(rgbColor, rgbColor, rgbColor));
+                bez.changeColor(rgbColor);
                 saturation++;
                 percent.setText((int)saturation);
                 if (saturation == 30) {
@@ -116,7 +113,9 @@ class Cloud extends GameObject implements Updatable {
         return saturation;
     }
 
-
+    public MediaPlayer getMediaPlayer() {
+        return mediaPlayer;
+    }
 
     @Override
     Shape getShapeBounds() {

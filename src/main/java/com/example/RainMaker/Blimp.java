@@ -12,11 +12,15 @@ import java.io.FileNotFoundException;
 public class Blimp extends GameObject {
 
 
-    Ellipse ellipse;
-    int fuel;
-    Label fuelText;
+    private Ellipse ellipse;
+    private int fuel;
+    private Label fuelText;
+
+    private boolean offScreen, inView, exited;
 
     public Blimp() throws FileNotFoundException {
+        alive = true;
+        offScreen = true;
         FileInputStream file = new FileInputStream("images/blimp.png");
         Image blimp = new Image(file);
         ImageView img = new ImageView(blimp);
@@ -37,7 +41,18 @@ public class Blimp extends GameObject {
     }
 
     public void update(){
-        setTranslateX(getTranslateX() + 0.5);
+        if(offScreen){
+            setTranslateX(-Game.GAME_WIDTH / 2);
+            setTranslateY(Math.random() * Game.GAME_HEIGHT);
+        }
+        if(inView){
+            setTranslateX(getTranslateX() + 2);
+        }
+    }
+
+    public void fuelHelicopter(){
+        fuel -= fuel * 0.01;
+        fuelText.setText(String.valueOf(fuel));
     }
 
     @Override
@@ -49,4 +64,18 @@ public class Blimp extends GameObject {
         return fuel;
     }
 
+    public boolean isExited(){
+        return exited;
+    }
+
+    public void setInView() {
+        offScreen = false;
+        this.inView = !inView;
+    }
+
+    public void setExited() {
+        this.exited = !exited;
+        inView = !inView;
+        offScreen = !offScreen;
+    }
 }

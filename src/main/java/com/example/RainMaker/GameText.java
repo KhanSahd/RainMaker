@@ -8,9 +8,9 @@ import javafx.scene.text.Font;
 class GameText extends GameObject {
 
     private Label s;
-    Color color;
-    Boolean isPercent;
-    Boolean isFuel;
+    private Color color;
+    private Boolean isPercent;
+    private Boolean isFuel;
 
     GameText(int percent, Boolean isPercentage) {
         isPercent = isPercentage;

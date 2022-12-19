@@ -54,6 +54,10 @@ abstract class GameObject extends Group {
         this.getChildren().add(node);
     }
 
+    public void destroy(){
+        alive = false;
+    }
+
     abstract Shape getShapeBounds();
 
     public boolean intersects(GameObject obj) {
