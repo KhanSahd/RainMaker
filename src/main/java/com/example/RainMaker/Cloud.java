@@ -63,6 +63,8 @@ class Cloud extends GameObject implements Updatable {
     }
 
 
+
+
     public void update() {
         resultW += Game.WIND_SPEED;
         result += Game.WIND_SPEED;

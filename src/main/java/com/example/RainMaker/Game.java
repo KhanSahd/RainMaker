@@ -140,7 +140,7 @@ class Game extends Pane {
     }
 
     public void regenerateBlimp() throws FileNotFoundException {
-        if(blimp.isExited()){
+        if(blimp.getTranslateX() > GAME_WIDTH){
             getChildren().remove(blimp);
             blimp = new Blimp();
             getChildren().add(blimp);
@@ -220,6 +220,7 @@ class Game extends Pane {
                     sky.getChildren().add(d);
                 }
                 getChildren().add(sky);
+                getChildren().add(blimp);
                 getChildren().add(helicopter); // HELICOPTER WILL BE ABOVE EVERYTHING
             /* End of sky objects */
 
@@ -270,14 +271,6 @@ class Game extends Pane {
 
     public int getCloudCounter() {
         return cloudCounter;
-    }
-
-    public Pane getGround() {
-        return ground;
-    }
-
-    public Pane getSky() {
-        return sky;
     }
 
     public Pane getCloudCont() {

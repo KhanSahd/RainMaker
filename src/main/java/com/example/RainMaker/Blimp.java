@@ -38,16 +38,11 @@ public class Blimp extends GameObject {
         add(img);
         add(fuelText);
         setTranslateX(-Game.GAME_WIDTH / 2);
+        setTranslateY(Math.random() * Game.GAME_HEIGHT);
     }
 
     public void update(){
-        if(offScreen){
-            setTranslateX(-Game.GAME_WIDTH / 2);
-            setTranslateY(Math.random() * Game.GAME_HEIGHT);
-        }
-        if(inView){
-            setTranslateX(getTranslateX() + 2);
-        }
+        setTranslateX(getTranslateX() + 2);
     }
 
     public void fuelHelicopter(){

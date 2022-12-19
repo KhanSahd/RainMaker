@@ -98,14 +98,15 @@ public class GameApp extends Application {
                     game.getBlimp().fuelHelicopter();
                     game.getHelicopter().reFuel(game.getBlimp().getFuel());
                 }
-                game.getBlimp().update();
                 game.generateClouds();
                 game.getClouds().removeIf(e -> !e.alive);
-                if((int)elapsedTime > 5){
-                    game.getBlimp().setInView();
+                if(game.getHelicopter().getFuel() < 16000){
+                    game.getBlimp().update();
                 }
-                if(game.getBlimp().getTranslateX() > game.GAME_WIDTH){
-                    game.getBlimp().setExited();
+                try {
+                    game.regenerateBlimp();
+                } catch (FileNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
                 if(game.getClouds().size() < game.getCloudCounter()){
                     game.getClouds().add(new Cloud());
